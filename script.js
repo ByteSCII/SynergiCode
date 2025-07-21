@@ -369,14 +369,28 @@ function showRegister() {
     registerFields.classList.remove('hidden'); // Show additional fields for registration
 }
 
+// Global map to keep track of rendered message elements by their Firestore document ID
+const renderedMessages = new Map();
+
 /**
  * Renders a message in the chat messages container.
  * Renderiza un mensaje en el contenedor de mensajes del chat.
  * @param {object} message - The message object. El objeto del mensaje.
  * @param {boolean} isCurrentUser - True if the message is from the current user. Verdadero si el mensaje es del usuario actual.
+ * @param {string} messageId - The Firestore document ID of the message.
  */
-function renderMessage(message, isCurrentUser) {
-    const messageElement = document.createElement('div');
+function renderMessage(message, isCurrentUser, messageId) {
+    let messageElement = document.getElementById(`message-${messageId}`);
+
+    // If message element already exists, update it (e.g., if content or media changes)
+    // For simplicity, we'll just remove and re-add if it's an update scenario for now.
+    if (messageElement) {
+        messageElement.remove();
+        renderedMessages.delete(messageId); // Remove from map as well
+    }
+
+    messageElement = document.createElement('div');
+    messageElement.id = `message-${messageId}`; // Assign a unique ID
     messageElement.classList.add('flex', 'mb-2', isCurrentUser ? 'justify-end' : 'justify-start');
 
     const messageBubble = document.createElement('div');
@@ -429,6 +443,7 @@ function renderMessage(message, isCurrentUser) {
     messageBubble.appendChild(messageTime);
     messageElement.appendChild(messageBubble); // Append the wrapper
     chatMessagesContainer.appendChild(messageElement); // Append the wrapper element
+    renderedMessages.set(messageId, messageElement); // Store the rendered element
     chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
 }
 
@@ -438,6 +453,7 @@ function renderMessage(message, isCurrentUser) {
  */
 function clearChatView() {
     chatMessagesContainer.innerHTML = '';
+    renderedMessages.clear(); // Clear the map when clearing the view
     messageInputArea.classList.add('hidden');
     noChatSelected.classList.remove('hidden');
     chatHeader.classList.add('hidden');
@@ -465,12 +481,18 @@ async function displayChatView(chatInfo) {
     currentChatPic.src = chatInfo.pic;
     currentChatStatus.textContent = chatInfo.status || '';
 
-    chatMessagesContainer.innerHTML = ''; // Clear previous messages
+    // Only clear the chat container and renderedMessages map if a new chat is selected
+    if (!activeChat || activeChat.id !== chatInfo.id || activeChat.type !== chatInfo.type) {
+        chatMessagesContainer.innerHTML = ''; // Clear previous messages
+        renderedMessages.clear(); // Clear the map for the new chat
+        console.log(`[displayChatView] New chat selected. Cleared chatMessagesContainer and renderedMessages map.`);
+    }
     activeChat = chatInfo;
 
     // Unsubscribe from previous messages listener if active
     if (unsubscribeMessages) {
         unsubscribeMessages();
+        console.log(`[displayChatView] Unsubscribed from previous messages listener.`);
     }
 
     let chatDocRef;
@@ -484,6 +506,7 @@ async function displayChatView(chatInfo) {
                 type: 'dm',
                 members: chatUsers
             }, { merge: true }); // Use merge to avoid overwriting existing chat data
+        console.log(`[displayChatView - DM] Chat Document Ref Path: ${chatDocRef.path}`);
     } else if (chatInfo.type === 'group') {
         chatDocRef = doc(db, `artifacts/${appId}/public/data/groups`, chatInfo.id);
         console.log(`[displayChatView - Group] Chat Document Ref Path: ${chatDocRef.path}`); // Debug log
@@ -492,7 +515,7 @@ async function displayChatView(chatInfo) {
     // Listen for messages in this chat
     const messagesCollectionRef = collection(chatDocRef, 'messages');
     const q = query(messagesCollectionRef, orderBy('timestamp')); // Order by timestamp
-    console.log(`[displayChatView - Group] Messages Collection Ref Path: ${messagesCollectionRef.path}`); // Debug log
+    console.log(`[displayChatView - Chat] Messages Collection Ref Path: ${messagesCollectionRef.path}`); // Debug log
 
     unsubscribeMessages = onSnapshot(q, async (snapshot) => {
         console.log(`[displayChatView - Messages] onSnapshot triggered for chat: ${chatInfo.id}, type: ${chatInfo.type}`);
@@ -500,20 +523,20 @@ async function displayChatView(chatInfo) {
             console.log("[displayChatView - Messages] No messages found in this chat (snapshot is empty).");
         }
 
-        chatMessagesContainer.innerHTML = ''; // Clear existing messages
-        const messagesToRender = [];
-
-        // Fetch all sender names efficiently
-        const senderIds = new Set(snapshot.docs.map(doc => doc.data().senderId));
+        // Efficiently fetch sender names only if needed
+        const senderIds = new Set();
+        snapshot.docs.forEach(doc => senderIds.add(doc.data().senderId));
         const senderNamesMap = new Map();
         for (const senderId of senderIds) {
-            const senderDocRef = doc(db, `artifacts/${appId}/users`, senderId);
-            try {
-                const senderDocSnap = await getDoc(senderDocRef);
-                senderNamesMap.set(senderId, senderDocSnap.exists() ? (senderDocSnap.data().username || senderDocSnap.data().email) : 'Desconocido');
-            } catch (fetchError) {
-                console.error(`[displayChatView - Messages] Error fetching sender document for ${senderId}:`, fetchError);
-                senderNamesMap.set(senderId, 'Desconocido');
+            if (!senderNamesMap.has(senderId)) { // Avoid re-fetching if already in map
+                const senderDocRef = doc(db, `artifacts/${appId}/users`, senderId);
+                try {
+                    const senderDocSnap = await getDoc(senderDocRef);
+                    senderNamesMap.set(senderId, senderDocSnap.exists() ? (senderDocSnap.data().username || senderDocSnap.data().email) : 'Desconocido');
+                } catch (fetchError) {
+                    console.error(`[displayChatView - Messages] Error fetching sender document for ${senderId}:`, fetchError);
+                    senderNamesMap.set(senderId, 'Desconocido');
+                }
             }
         }
         console.log("[displayChatView - Messages] Sender Names Map:", Object.fromEntries(senderNamesMap));
@@ -522,28 +545,32 @@ async function displayChatView(chatInfo) {
         snapshot.docChanges().forEach(docChange => {
             const messageData = docChange.doc.data();
             const messageId = docChange.doc.id;
+            const senderName = senderNamesMap.get(messageData.senderId);
+            const isCurrentUserMessage = messageData.senderId === currentUserId;
+
             console.log(`[displayChatView - Messages] Doc change type: ${docChange.type}, Message ID: ${messageId}, Data:`, messageData);
 
-            // Only process 'added' for initial load and new messages.
-            // For 'modified' or 'removed', we'd need more complex logic if not clearing HTML each time.
             if (docChange.type === 'added') {
-                const senderName = senderNamesMap.get(messageData.senderId);
-                messagesToRender.push({ ...messageData, senderName, id: messageId }); // Include ID for potential future use
+                // Render new message
+                renderMessage({ ...messageData, senderName }, isCurrentUserMessage, messageId);
+            } else if (docChange.type === 'modified') {
+                // Update existing message (if message content can change)
+                // For chat messages, content usually doesn't change, but media might load.
+                // For simplicity, we'll remove and re-add to ensure updates are reflected.
+                const existingElement = renderedMessages.get(messageId);
+                if (existingElement) {
+                    existingElement.remove();
+                    renderedMessages.delete(messageId);
+                }
+                renderMessage({ ...messageData, senderName }, isCurrentUserMessage, messageId);
+            } else if (docChange.type === 'removed') {
+                // Remove message
+                const existingElement = renderedMessages.get(messageId);
+                if (existingElement) {
+                    existingElement.remove();
+                    renderedMessages.delete(messageId);
+                }
             }
-            // If you want to handle modifications or removals, you'd need to update/remove specific message elements
-            // For now, re-rendering all is simpler for debugging.
-        });
-
-        // Ensure messages are sorted by timestamp before rendering, even if Firestore query orders them.
-        // This is a safeguard. The `orderBy('timestamp')` in the query is the primary mechanism.
-        messagesToRender.sort((a, b) => {
-            const tsA = a.timestamp ? a.timestamp.toMillis() : 0;
-            const tsB = b.timestamp ? b.timestamp.toMillis() : 0;
-            return tsA - tsB;
-        });
-
-        messagesToRender.forEach(message => {
-            renderMessage(message, message.senderId === currentUserId);
         });
 
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
