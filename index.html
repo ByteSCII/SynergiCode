@@ -292,7 +292,7 @@
             serverTimestamp,
             orderBy,
             limit,
-            deleteDoc // Added deleteDoc for leaving group
+            deleteDoc
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Global Variables ---
@@ -303,7 +303,7 @@
         let currentUserEmail = null;
         let userDisplayName = null;
         let userProfilePicUrl = "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF"; // Default profile picture
-        let activeChat = null; // Stores { id: 'chatId', type: 'user' | 'group', name: 'Chat Name' }
+        let activeChat = null; // Stores { id: 'chatId', type: 'user' | 'group', name: 'Chat Name', members: [] }
         let contacts = [];
         let groups = [];
         let unsubscribeMessages = null;
@@ -313,9 +313,6 @@
         let notificationIdCounter = 0;
 
         // Firebase Configuration (ensure this matches your Firebase project settings)
-        // The `typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) :`
-        // part is for environments like Google Cloud Shell where config might be injected.
-        // For local development, the hardcoded values are used.
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyASX4A-fd3tvzWByAkqgdXMB9DbV4r_OLI",
             authDomain: "synergicode.firebaseapp.com",
@@ -443,9 +440,6 @@
                         createdAt: serverTimestamp()
                     });
 
-                    // Send email verification
-                    // await sendEmailVerification(user);
-                    // displayAuthMessage('Registro exitoso. Se ha enviado un correo de verificación. Por favor, revisa tu bandeja de entrada.', 'success');
                     addNotification('Registro Exitoso', 'Tu cuenta ha sido creada. ¡Bienvenido!', 'success');
                 }
             } catch (error) {
@@ -477,7 +471,6 @@
                 currentUserEmail = user.email;
 
                 // Fetch user's custom username from Firestore
-                // This is the line that was causing the permission error
                 const userDocRef = doc(db, 'users', user.uid);
                 const userDocSnap = await getDoc(userDocRef); 
 
@@ -752,6 +745,7 @@
                     timestamp: serverTimestamp()
                 };
 
+                // Ensure activeChat.id is used as the chat document ID
                 await addDoc(collection(db, 'chats', activeChat.id, 'messages'), messageData);
                 messageInput.value = ''; // Clear input
                 chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
@@ -856,7 +850,8 @@
                             <p class="text-sm text-gray-500">${group.members.length} miembros</p>
                         </div>
                     `;
-                    div.addEventListener('click', () => openChat(group.id, 'group', group.name));
+                    // Pass group.members to openChat for group chats
+                    div.addEventListener('click', () => openChat(group.id, 'group', group.name, group.members));
                     groupList.appendChild(div);
                 }
             });
@@ -878,14 +873,34 @@
 
         searchInput.addEventListener('input', renderContactsAndGroups);
 
-        function openChat(chatId, chatType, chatName) {
-            activeChat = { id: chatId, type: chatType, name: chatName };
+        async function openChat(chatId, chatType, chatName, chatMembers = []) { // Added chatMembers parameter
+            activeChat = { id: chatId, type: chatType, name: chatName, members: chatMembers }; // Store members in activeChat
             currentChatName.textContent = chatName;
             chatArea.classList.remove('hidden');
             contactListSection.classList.add('hidden'); // Hide contact list on mobile
-            loadMessages(chatId, chatType);
-            renderContactsAndGroups(); // Re-render to highlight active chat
             chatInfoButton.classList.remove('hidden'); // Show info button
+
+            // Ensure the chat document exists and has the correct members array for security rules
+            const chatDocRef = doc(db, 'chats', chatId);
+            try {
+                // If it's a direct message, members are current user and contact.id
+                // If it's a group, members are passed from the group object.
+                const membersToSet = chatType === 'user' ? [currentUserId, chatId].sort() : chatMembers;
+                
+                await setDoc(chatDocRef, {
+                    type: chatType,
+                    members: membersToSet,
+                    lastActivity: serverTimestamp() // Optional: track last activity
+                }, { merge: true }); // Use merge to avoid overwriting existing chat data (like last message info)
+                console.log(`Ensured chat document ${chatId} exists with members:`, membersToSet);
+            } catch (error) {
+                console.error("Error ensuring chat document exists:", error);
+                addNotification('Error de Chat', 'No se pudo inicializar el chat. Inténtalo de nuevo.', 'error');
+                return; // Prevent loading messages if chat doc setup failed
+            }
+
+            loadMessages(chatId, chatType); // Now, loadMessages will be called after the chat document is ready
+            renderContactsAndGroups(); // Re-render to highlight active chat
 
             // Hide mobile sidebar after selecting chat
             sidebar.classList.add('-translate-x-full');
