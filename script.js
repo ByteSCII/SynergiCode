@@ -159,7 +159,7 @@ const closeNotificationsModalButton = document.getElementById('close-notificatio
 const showFriendRequestsButton = document.getElementById('show-friend-requests-button'); // New DOM element
 
 const changeUsernameModal = document.getElementById('change-username-modal');
-const changeUsernameForm = document.getElementById('change-username-form');
+const changeUsernameForm = document = document.getElementById('change-username-form');
 const newUsernameInput = document.getElementById('new-username-input');
 const cancelChangeUsernameButton = document.getElementById('cancel-change-username');
 const changeUsernameMessage = document.getElementById('change-username-message');
@@ -178,6 +178,13 @@ const addGroupMemberForm = document.getElementById('add-group-member-form');
 const addGroupMemberInput = document.getElementById('add-group-member-input');
 const cancelAddGroupMemberButton = document.getElementById('cancel-add-group-member');
 const addGroupMemberMessage = document.getElementById('add-group-member-message');
+
+// Custom Confirmation Modal DOM Elements
+const confirmModal = document.getElementById('confirm-modal');
+const confirmModalTitle = document.getElementById('confirm-modal-title');
+const confirmModalContent = document.getElementById('confirm-modal-content');
+const confirmModalOkButton = document.getElementById('confirm-modal-ok');
+const confirmModalCancelButton = document.getElementById('confirm-modal-cancel');
 
 
 // --- Utility Functions ---
@@ -366,6 +373,38 @@ function showEmailSentModal() {
  */
 function hideEmailSentModal() {
     emailSentModal.classList.add('hidden');
+}
+
+/**
+ * Displays a custom confirmation modal.
+ * Muestra un modal de confirmación personalizado.
+ * @param {string} title - El título de la confirmación.
+ * @param {string} content - El mensaje de contenido.
+ * @returns {Promise<boolean>} Una promesa que se resuelve en true si se confirma, false en caso contrario.
+ */
+function showConfirmModal(title, content) {
+    return new Promise(resolve => {
+        confirmModalTitle.textContent = title;
+        confirmModalContent.textContent = content;
+        confirmModal.classList.remove('hidden');
+
+        const handleConfirm = () => {
+            confirmModal.classList.add('hidden');
+            confirmModalOkButton.removeEventListener('click', handleConfirm);
+            confirmModalCancelButton.removeEventListener('click', handleCancel);
+            resolve(true);
+        };
+
+        const handleCancel = () => {
+            confirmModal.classList.add('hidden');
+            confirmModalOkButton.removeEventListener('click', handleConfirm);
+            confirmModalCancelButton.removeEventListener('click', handleCancel);
+            resolve(false);
+        };
+
+        confirmModalOkButton.addEventListener('click', handleConfirm);
+        confirmModalCancelButton.addEventListener('click', handleCancel);
+    });
 }
 
 /**
@@ -1020,8 +1059,8 @@ async function leaveGroup() {
         return;
     }
 
-    const confirmLeave = confirm(`¿Estás seguro de que quieres salir del grupo "${activeChat.name}"?`); // Using confirm for simplicity, replace with custom modal if needed
-    if (!confirmLeave) {
+    const confirmed = await showConfirmModal('Confirmar Salida del Grupo', `¿Estás seguro de que quieres salir del grupo "${activeChat.name}"?`);
+    if (!confirmed) {
         return;
     }
 
