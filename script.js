@@ -170,6 +170,15 @@ const mobileLogoutButton = document.getElementById('mobile-logout-button');
 const closeSidebarButton = document.getElementById('close-sidebar-button');
 const sidebarOverlay = document.getElementById('sidebar-overlay');
 
+// New DOM Elements for Group Management
+const addGroupMemberButton = document.getElementById('add-group-member-button'); // Button in chat header
+const leaveGroupButton = document.getElementById('leave-group-button'); // Button in chat header
+const addGroupMemberModal = document.getElementById('add-group-member-modal');
+const addGroupMemberForm = document.getElementById('add-group-member-form');
+const addGroupMemberInput = document.getElementById('add-group-member-input');
+const cancelAddGroupMemberButton = document.getElementById('cancel-add-group-member');
+const addGroupMemberMessage = document.getElementById('add-group-member-message');
+
 
 // --- Utility Functions ---
 
@@ -211,14 +220,30 @@ function updateNotificationBadge() {
 /**
  * Displays the notifications modal and renders the notifications.
  * Muestra el modal de notificaciones y renderiza las notificaciones.
+ * @param {string} [filterType=null] - Optional filter to show only specific types of notifications (e.g., 'friendRequest').
  */
-function showNotificationsModal() {
+function showNotificationsModal(filterType = null) {
     notificationsList.innerHTML = '';
-    if (notifications.length === 0) {
+    
+    let notificationsToDisplay = notifications;
+    if (filterType) {
+        notificationsToDisplay = notifications.filter(n => n.type === filterType);
+        notificationsModal.dataset.filter = filterType; // Store the active filter
+    } else {
+        delete notificationsModal.dataset.filter; // Clear filter if showing all
+    }
+
+    if (notificationsToDisplay.length === 0) {
         noNotificationsMessage.classList.remove('hidden');
+        // Customize message based on filter
+        if (filterType === 'friendRequest') {
+            noNotificationsMessage.textContent = 'No tienes solicitudes de amistad pendientes.';
+        } else {
+            noNotificationsMessage.textContent = 'No tienes notificaciones.';
+        }
     } else {
         noNotificationsMessage.classList.add('hidden');
-        notifications.forEach(n => {
+        notificationsToDisplay.forEach(n => {
             const li = document.createElement('li');
             li.classList.add('p-3', 'rounded-md', 'shadow-sm');
             
@@ -304,7 +329,7 @@ function showNotificationsModal() {
  */
 function clearAllNotifications() {
     notifications = [];
-    showNotificationsModal(); // Re-render to show empty state
+    showNotificationsModal(notificationsModal.dataset.filter || null); // Re-render to show empty state, maintaining filter
 }
 
 /**
@@ -447,6 +472,10 @@ function clearChatView() {
     messageInputArea.classList.add('hidden');
     noChatSelected.classList.remove('hidden');
     chatHeader.classList.add('hidden');
+    // Hide group action buttons when no chat or non-group chat is selected
+    addGroupMemberButton.classList.add('hidden');
+    leaveGroupButton.classList.add('hidden');
+
     if (unsubscribeMessages) {
         unsubscribeMessages(); // Unsubscribe from previous chat messages
     }
@@ -456,7 +485,7 @@ function clearChatView() {
 /**
  * Displays the chat view for a given contact or group.
  * Muestra la vista de chat para un contacto o grupo dado.
- * @param {object} chatInfo - Object containing chat details (id, type, name, pic, status). Objeto que contiene los detalles del chat (id, tipo, nombre, imagen, estado).
+ * @param {object} chatInfo - Object containing chat details (id, type, name, pic, status, adminId). Objeto que contiene los detalles del chat (id, tipo, nombre, imagen, estado, adminId).
  */
 async function displayChatView(chatInfo) {
     // Hide lists and show chat area
@@ -470,6 +499,20 @@ async function displayChatView(chatInfo) {
     currentChatName.textContent = chatInfo.name;
     currentChatPic.src = chatInfo.pic;
     currentChatStatus.textContent = chatInfo.status || '';
+
+    // Show/hide group action buttons
+    if (chatInfo.type === 'group') {
+        leaveGroupButton.classList.remove('hidden');
+        if (chatInfo.adminId === currentUserId) {
+            addGroupMemberButton.classList.remove('hidden');
+        } else {
+            addGroupMemberButton.classList.add('hidden');
+        }
+    } else {
+        addGroupMemberButton.classList.add('hidden');
+        leaveGroupButton.classList.add('hidden');
+    }
+
 
     // Only clear the chat container and renderedMessages map if a new chat is selected
     if (!activeChat || activeChat.id !== chatInfo.id || activeChat.type !== chatInfo.type) {
@@ -689,7 +732,8 @@ function renderGroups() {
                 type: 'group',
                 name: group.name,
                 pic: group.photoUrl || "https://placehold.co/50x50/E2E8F0/4A5568?text=Group", // Use group.photoUrl
-                status: `${group.members.length} miembros`
+                status: `${group.members.length} miembros`,
+                adminId: group.adminId // Pass adminId to chatInfo
             });
         });
 
@@ -766,6 +810,22 @@ function listenForGroups() {
     unsubscribeGroups = onSnapshot(q, (snapshot) => {
         groups = snapshot.docs.map(doc => ({ groupId: doc.id, ...doc.data() }));
         renderGroups(); // Re-render groups list
+        // If current active chat is a group, re-evaluate admin buttons
+        if (activeChat && activeChat.type === 'group') {
+            const currentGroupData = groups.find(g => g.groupId === activeChat.id);
+            if (currentGroupData) {
+                activeChat.adminId = currentGroupData.adminId; // Update activeChat's adminId
+                if (activeChat.adminId === currentUserId) {
+                    addGroupMemberButton.classList.remove('hidden');
+                } else {
+                    addGroupMemberButton.classList.add('hidden');
+                }
+            } else {
+                // If the current group no longer exists (e.g., user left it), clear chat view
+                clearChatView();
+                showGroupsButton.click(); // Go back to groups list
+            }
+        }
     }, (error) => {
         console.error("Error listening to user groups:", error);
         addNotification('Error de Grupos', 'Hubo un problema al cargar tus grupos. Intenta recargar la página.', 'error');
@@ -816,9 +876,10 @@ function listenForFriendRequests() {
             }
         }
         updateNotificationBadge();
-        // If the notifications modal is open, re-render it
+        // If the notifications modal is open, re-render it based on its current filter
         if (!notificationsModal.classList.contains('hidden')) {
-            showNotificationsModal();
+            const currentFilter = notificationsModal.dataset.filter || null;
+            showNotificationsModal(currentFilter);
         }
     }, (error) => {
         console.error("Error listening to friend requests:", error);
@@ -884,6 +945,126 @@ async function denyFriendRequest(requestId) {
         addNotification('Error', 'No se pudo denegar la solicitud de amistad.', 'error');
     }
 }
+
+/**
+ * Adds a member to the active group.
+ * Añade un miembro al grupo activo.
+ * @param {string} memberIdentifier - The email or username of the user to add.
+ */
+async function addMemberToGroup(memberIdentifier) {
+    addGroupMemberMessage.textContent = '';
+    if (!activeChat || activeChat.type !== 'group') {
+        addGroupMemberMessage.textContent = 'No hay un grupo activo seleccionado.';
+        return;
+    }
+    if (activeChat.adminId !== currentUserId) {
+        addGroupMemberMessage.textContent = 'Solo el administrador del grupo puede añadir miembros.';
+        return;
+    }
+
+    try {
+        let querySnapshot;
+        if (memberIdentifier.includes('@')) {
+            const usersRef = collection(db, `artifacts/${appId}/users`);
+            const q = query(usersRef, where('email', '==', memberIdentifier));
+            querySnapshot = await getDocs(q);
+        } else {
+            const usersRef = collection(db, `artifacts/${appId}/users`);
+            const q = query(usersRef, where('username', '==', memberIdentifier));
+            querySnapshot = await getDocs(q);
+        }
+
+        if (querySnapshot.empty) {
+            addGroupMemberMessage.textContent = 'Usuario no encontrado. Asegúrate de que el correo o nombre de usuario sea correcto.';
+            return;
+        }
+
+        const userToAddDoc = querySnapshot.docs[0];
+        const userToAddUid = userToAddDoc.id;
+        const userToAddName = userToAddDoc.data().username || userToAddDoc.data().email;
+
+        const groupDocRef = doc(db, `artifacts/${appId}/public/data/groups`, activeChat.id);
+        const groupDocSnap = await getDoc(groupDocRef);
+
+        if (groupDocSnap.exists()) {
+            const groupData = groupDocSnap.data();
+            const currentMembers = groupData.members || [];
+
+            if (currentMembers.includes(userToAddUid)) {
+                addGroupMemberMessage.textContent = `${userToAddName} ya es miembro de este grupo.`;
+                return;
+            }
+
+            await updateDoc(groupDocRef, {
+                members: [...currentMembers, userToAddUid]
+            });
+            addNotification('Miembro Añadido', `${userToAddName} ha sido añadido al grupo "${activeChat.name}".`, 'success');
+            addGroupMemberModal.classList.add('hidden');
+        } else {
+            addGroupMemberMessage.textContent = 'Error: El grupo no existe.';
+        }
+    } catch (error) {
+        console.error('Error al añadir miembro al grupo:', error);
+        addGroupMemberMessage.textContent = `Hubo un problema al añadir al miembro.`;
+        addNotification('Error', 'No se pudo añadir al miembro al grupo.', 'error');
+    }
+}
+
+/**
+ * Allows the current user to leave the active group.
+ * Permite al usuario actual salir del grupo activo.
+ */
+async function leaveGroup() {
+    if (!activeChat || activeChat.type !== 'group') {
+        showMessageBox('Error', 'No hay un grupo activo seleccionado para salir.');
+        return;
+    }
+
+    const confirmLeave = confirm(`¿Estás seguro de que quieres salir del grupo "${activeChat.name}"?`); // Using confirm for simplicity, replace with custom modal if needed
+    if (!confirmLeave) {
+        return;
+    }
+
+    try {
+        const groupDocRef = doc(db, `artifacts/${appId}/public/data/groups`, activeChat.id);
+        const groupDocSnap = await getDoc(groupDocRef);
+
+        if (groupDocSnap.exists()) {
+            const groupData = groupDocSnap.data();
+            let currentMembers = groupData.members || [];
+
+            if (!currentMembers.includes(currentUserId)) {
+                showMessageBox('Error', 'No eres miembro de este grupo.');
+                return;
+            }
+
+            // Remove current user from members array
+            currentMembers = currentMembers.filter(memberId => memberId !== currentUserId);
+
+            if (currentMembers.length === 0) {
+                // If no members left, delete the group
+                await deleteDoc(groupDocRef);
+                addNotification('Grupo Eliminado', `El grupo "${activeChat.name}" ha sido eliminado ya que no quedan miembros.`, 'info');
+            } else {
+                // If members remain, update the group
+                await updateDoc(groupDocRef, {
+                    members: currentMembers
+                });
+                addNotification('Grupo Abandonado', `Has salido del grupo "${activeChat.name}" correctamente.`, 'success');
+            }
+            clearChatView(); // Clear chat view after leaving group
+            showGroupsButton.click(); // Go back to groups list
+        } else {
+            showMessageBox('Error', 'El grupo ya no existe.');
+            clearChatView();
+            showGroupsButton.click();
+        }
+    } catch (error) {
+        console.error('Error al salir del grupo:', error);
+        addNotification('Error', 'No se pudo salir del grupo. Por favor, inténtalo de nuevo.', 'error');
+    }
+}
+
 
 // --- Firebase Initialization and Authentication State Listener ---
 // This block will be executed once the DOM is fully loaded.
@@ -1510,14 +1691,14 @@ forgotPasswordForm.addEventListener('submit', async (e) => {
     }
 });
 
-showNotificationsButton.addEventListener('click', showNotificationsModal);
+showNotificationsButton.addEventListener('click', () => showNotificationsModal(null)); // Show all notifications
 clearNotificationsButton.addEventListener('click', clearAllNotifications);
 closeNotificationsModalButton.addEventListener('click', () => {
     notificationsModal.classList.add('hidden');
 });
 
 // New Event Listener for Friend Requests Button
-showFriendRequestsButton.addEventListener('click', showNotificationsModal);
+showFriendRequestsButton.addEventListener('click', () => showNotificationsModal('friendRequest'));
 
 
 changeUsernameButton.addEventListener('click', () => {
@@ -1590,3 +1771,34 @@ sidebarOverlay.addEventListener('click', () => {
     sidebar.classList.add('-translate-x-full');
     sidebarOverlay.classList.add('hidden');
 });
+
+// New Event Listeners for Group Management
+addGroupMemberButton.addEventListener('click', () => {
+    if (!activeChat || activeChat.type !== 'group') {
+        showMessageBox('Error', 'Selecciona un grupo para añadir miembros.');
+        return;
+    }
+    if (activeChat.adminId !== currentUserId) {
+        showMessageBox('Permiso Denegado', 'Solo el administrador del grupo puede añadir miembros.');
+        return;
+    }
+    addGroupMemberModal.classList.remove('hidden');
+    addGroupMemberMessage.textContent = '';
+    addGroupMemberInput.value = '';
+});
+
+cancelAddGroupMemberButton.addEventListener('click', () => {
+    addGroupMemberModal.classList.add('hidden');
+});
+
+addGroupMemberForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const memberIdentifier = addGroupMemberInput.value.trim();
+    if (memberIdentifier) {
+        await addMemberToGroup(memberIdentifier);
+    } else {
+        addGroupMemberMessage.textContent = 'Por favor, introduce el correo electrónico o nombre de usuario del miembro.';
+    }
+});
+
+leaveGroupButton.addEventListener('click', leaveGroup);
