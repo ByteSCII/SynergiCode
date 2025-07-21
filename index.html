@@ -4,139 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChatApp</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
     <style>
-        /* CSS Variables for Theming */
-        :root {
-            --color-primary: #4CAF50;
-            --color-primary-dark: #43A047;
-            --color-secondary-blue: #2196F3;
-            --color-secondary-blue-dark: #1976D2;
-            --color-darkblue: #3B3B6B;
-            --color-background: #f0f2f5;
-            --color-surface: #ffffff;
-            --color-text-default: #374151; /* gray-800 */
-            --color-text-secondary: #6B7280; /* gray-500 */
-            --color-border: #E5E7EB; /* gray-200 */
-            --color-input-border: #D1D5DB; /* gray-300 */
-            --color-message-bg-self: var(--color-secondary-blue);
-            --color-message-text-self: #ffffff;
-            --color-message-bg-other: #e5e7eb; /* gray-200 */
-            --color-message-text-other: #374151; /* gray-800 */
-            --color-green-status: #22C55E; /* green-500 */
-            --color-gray-status: #9CA3AF; /* gray-400 */
-            --color-red-error: #EF4444; /* red-600 */
-            --color-green-success: #22C55E; /* green-600 */
-            --color-blue-info: #3B82F6; /* blue-500 */
-        }
-
-        .dark-mode {
-            --color-primary: #66BB6A; /* Lighter green for dark mode */
-            --color-primary-dark: #81C784;
-            --color-secondary-blue: #64B5F6; /* Lighter blue for dark mode */
-            --color-secondary-blue-dark: #90CAF9;
-            --color-darkblue: #B0BEC5; /* Lighter text for dark mode */
-            --color-background: #000000; /* Pure black background */
-            --color-surface: #0a0a0a; /* Very dark surface for cards/panels */
-            --color-text-default: #E2E8F0; /* Light gray text */
-            --color-text-secondary: #A0AEC0; /* Lighter gray secondary text */
-            --color-border: #333333; /* Darker border */
-            --color-input-border: #444444; /* Darker input border */
-            --color-message-bg-self: var(--color-secondary-blue);
-            --color-message-text-self: #ffffff;
-            --color-message-bg-other: #333333; /* Darker gray for other messages */
-            --color-message-text-other: #E2E8F0; /* Light text for other messages */
-            --color-green-status: #4CAF50; /* Adjust for dark mode visibility */
-            --color-gray-status: #6B7280; /* Adjust for dark mode visibility */
-            --color-red-error: #F87171; /* Adjust for dark mode visibility */
-            --color-green-success: #4CAF50; /* Adjust for dark mode visibility */
-            --color-blue-info: #60A5FA; /* Adjust for dark mode visibility */
-        }
-
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--color-background);
-            color: var(--color-text-default);
-            transition: background-color 0.3s ease, color 0.3s ease;
+            background-color: #f0f2f5;
         }
-
-        /* Applying CSS variables to Tailwind-like classes */
-        .bg-custom-primary { background-color: var(--color-primary); }
-        .hover\:bg-custom-primary-dark:hover { background-color: var(--color-primary-dark); }
-        .focus\:ring-custom-primary { --tw-ring-color: var(--color-primary); }
-
-        .text-custom-darkblue { color: var(--color-darkblue); }
-        .bg-custom-secondary-blue { background-color: var(--color-secondary-blue); }
-        .hover\:bg-custom-secondary-blue-dark:hover { background-color: var(--color-secondary-blue-dark); }
-        .focus\:ring-custom-secondary-blue { --tw-ring-color: var(--color-secondary-blue); }
-
-        /* General element styling based on variables */
-        .bg-white { background-color: var(--color-surface); }
-        .bg-gray-100 { background-color: var(--color-background); } /* Main app background */
-        .bg-gray-50 { background-color: var(--color-background); } /* Chat area, lists background */
-        .bg-gray-200 { background-color: var(--color-message-bg-other); color: var(--color-message-text-other); } /* Other messages, general gray buttons */
-        .hover\:bg-gray-200:hover { background-color: var(--color-border); } /* Hover for lists */
-        .hover\:bg-gray-300:hover { background-color: var(--color-border); } /* Hover for buttons */
-
-        .text-gray-700 { color: var(--color-text-default); }
-        .text-gray-800 { color: var(--color-text-default); }
-        .text-gray-500 { color: var(--color-text-secondary); }
-        .text-gray-600 { color: var(--color-text-secondary); }
-
-        .border-gray-200 { border-color: var(--color-border); }
-        .border-gray-300 { border-color: var(--color-input-border); }
-
-        .text-red-500 { color: var(--color-red-error); }
-        .hover\:text-red-700:hover { color: var(--color-red-error); }
-        .text-red-600 { color: var(--color-red-error); }
-        .text-green-600 { color: var(--color-green-success); }
-        .text-blue-200 { color: var(--color-text-secondary); } /* For sender name in self message */
-        .text-blue-300 { color: var(--color-text-secondary); } /* For timestamp in self message */
-        .bg-green-500 { background-color: var(--color-green-status); }
-        .bg-gray-400 { background-color: var(--color-gray-status); }
-        .bg-green-50 { background-color: var(--color-green-success); }
-        .bg-red-50 { background-color: var(--color-red-error); }
-        .bg-blue-50 { background-color: var(--color-blue-info); }
-
-        /* Custom scrollbar for chat messages */
-        .chat-messages::-webkit-scrollbar {
-            width: 8px;
+        .bg-custom-primary {
+            background-color: #6366F1; /* Example primary color: Indigo-500 */
         }
-        .chat-messages::-webkit-scrollbar-track {
-            background: var(--color-background);
-            border-radius: 10px;
+        .hover\:bg-custom-primary-dark:hover {
+            background-color: #4F46E5; /* Darker Indigo-600 */
         }
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: var(--color-text-secondary);
-            border-radius: 10px;
+        .text-custom-primary {
+            color: #6366F1;
         }
-        .chat-messages::-webkit-scrollbar-thumb:hover {
-            background: var(--color-darkblue);
+        .focus\:ring-custom-primary:focus {
+            --tw-ring-color: #6366F1;
         }
-        /* Custom modal styles */
+        .bg-custom-secondary-blue {
+            background-color: #3B82F6; /* Example secondary color: Blue-500 */
+        }
+        .focus\:ring-custom-secondary-blue:focus {
+            --tw-ring-color: #3B82F6;
+        }
+        .border-custom-primary {
+            border-color: #6366F1;
+        }
+        .text-custom-secondary-gray {
+            color: #6B7280; /* Gray-500 */
+        }
+        .bg-blue-500-custom { /* Custom class for blue background */
+            background-color: #3B82F6;
+        }
+        .bg-green-500-custom { /* Custom class for green background */
+            background-color: #10B981; /* Example Green-500 */
+        }
+        .bg-red-500-custom { /* Custom class for red background */
+            background-color: #EF4444; /* Example Red-500 */
+        }
+        .shadow-custom {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .shadow-custom-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
         .modal-overlay {
             background-color: rgba(0, 0, 0, 0.5);
         }
         .modal-content {
-            background-color: var(--color-surface);
+            background-color: #fff;
             border-radius: 0.75rem; /* rounded-xl */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
-            color: var(--color-text-default);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
-        /* Hidden file input */
-        .hidden-file-input {
-            display: none;
+        /* Custom scrollbar for chat messages */
+        .chat-messages-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-messages-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .chat-messages-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        .chat-messages-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>
 <body class="h-screen flex items-center justify-center">
 
-    <!-- Login/Registration Section -->
     <div id="auth-section" class="bg-white p-8 rounded-xl shadow-xl w-full max-w-md">
         <div class="flex justify-center mb-6">
             <img src="https://i.imgur.com/CJHtqu5.jpeg" alt="SynergiCode Logo" class="w-48 h-auto">
@@ -145,326 +87,139 @@
         <form id="auth-form" class="space-y-4">
             <div>
                 <label for="email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
-                <input type="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
+                <input type="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-primary focus:border-custom-primary sm:text-sm" required>
             </div>
             <div>
                 <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
-                <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
+                <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-primary focus:border-custom-primary sm:text-sm" required>
             </div>
-            <!-- New fields for registration -->
-            <div id="register-fields" class="space-y-4 hidden">
-                <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700">Nombre de Usuario (opcional)</label>
-                    <input type="text" id="username" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm">
-                </div>
-                <div>
-                    <label for="phone" class="block text-sm font-medium text-gray-700">Número de Teléfono</label>
-                    <input type="tel" id="phone" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" placeholder="+58XXXXXXXXX" pattern="^\+\d{1,3}\d{7,15}$" title="Formato: +CódigoDePaísNúmero (ej. +584123456789)">
-                </div>
-                <div>
-                    <label for="dob" class="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
-                    <input type="date" id="dob" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm">
-                </div>
-                <div>
-                    <label for="age" class="block text-sm font-medium text-gray-700">Edad</label>
-                    <input type="number" id="age" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" min="0" max="120">
-                </div>
-            </div>
-            <button type="submit" id="auth-button" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-custom-primary hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
-                Iniciar Sesión
+            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-custom-primary hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
+                <span id="auth-button-text">Iniciar Sesión</span>
             </button>
         </form>
-        <p class="mt-4 text-center text-sm text-gray-600">
-            ¿No tienes una cuenta? <button id="toggle-auth" class="font-medium text-custom-secondary-blue hover:text-custom-secondary-blue-dark">Regístrate</button>
+        <p class="mt-6 text-center text-sm">
+            ¿No tienes una cuenta? <button type="button" id="toggle-auth-mode" class="font-medium text-custom-primary hover:text-custom-primary-dark">Regístrate</button>
         </p>
         <p class="mt-2 text-center text-sm">
-            <button id="forgot-password-link" class="font-medium text-custom-secondary-blue hover:text-custom-secondary-blue-dark">¿Olvidaste tu contraseña?</button>
+            <button type="button" id="forgot-password" class="font-medium text-custom-secondary-gray hover:text-gray-900">¿Olvidaste tu contraseña?</button>
         </p>
-        <div id="auth-message" class="mt-4 text-center text-sm text-red-600"></div>
+        <div id="auth-message" class="mt-4 text-center text-sm font-medium text-red-600 hidden"></div>
     </div>
 
-    <!-- Main Chat Application Section -->
-    <div id="app-section" class="hidden h-screen w-full flex flex-col md:flex-row bg-gray-100 rounded-xl shadow-xl overflow-hidden">
-        <!-- Sidebar -->
-        <div id="sidebar" class="w-full max-w-xs md:w-1/4 bg-custom-surface border-r border-gray-200 flex-col md:flex fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40">
+    <div id="main-app" class="hidden h-screen w-full flex bg-gray-100 overflow-hidden">
+        <div id="mobile-sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden"></div>
+        <aside id="sidebar" class="fixed inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out bg-white w-64 flex flex-col z-40 shadow-lg">
             <div class="p-4 border-b border-gray-200 flex items-center justify-between">
-                <h1 class="text-2xl font-bold text-custom-darkblue dark:text-white">ChatApp</h1> <!-- Added dark:text-white -->
-                <button id="logout-button" class="text-red-500 hover:text-red-700 text-sm font-medium hidden md:block">
-                    <i class="fas fa-sign-out-alt mr-1"></i>Salir
-                </button>
-                <button id="close-sidebar-button" class="md:hidden text-gray-700 hover:text-gray-900 p-2 rounded-md">
-                    <i class="fas fa-xmark text-lg"></i>
-                </button>
-            </div>
-            <div class="p-4 flex flex-col items-center border-b border-gray-200">
-                <div class="mb-4">
-                    <img src="https://i.imgur.com/CJHtqu5.jpeg" alt="SynergiCode Logo" class="w-24 h-auto">
-                </div>
-                <div class="relative">
-                    <img id="profile-pic" src="https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF" alt="Foto de Perfil" class="w-24 h-24 rounded-full object-cover border-2 border-custom-secondary-blue mb-2">
-                    <input type="file" id="profile-pic-upload" accept="image/*" class="hidden-file-input">
-                    <button id="upload-pic-button" class="absolute bottom-0 right-0 bg-custom-secondary-blue text-white rounded-full p-2 text-xs shadow-md hover:bg-custom-secondary-blue-dark transition-colors duration-200">
-                        <i class="fas fa-camera"></i>
-                    </button>
-                </div>
-                <p id="user-display-username" class="text-xl font-bold text-custom-darkblue"></p> <!-- Removed mt-2, will be handled by parent flexbox -->
-                
-                <!-- Email Verification Status in Sidebar -->
-                <div id="email-verification-status-sidebar" class="text-xs text-gray-500 mt-1 text-center">
-                    <span id="email-verified-text"></span>
-                    <button id="resend-verification-email-sidebar" class="hidden mt-1 text-custom-secondary-blue hover:text-custom-secondary-blue-dark font-medium">
-                        Reenviar Email de Verificación
-                    </button>
-                </div>
-
-                <p id="user-phone-display" class="text-xs text-gray-500"></p>
-                <p id="user-dob-display" class="text-xs text-gray-500"></p>
-                <p id="user-age-display" class="text-xs text-gray-500"></p>
-                <button id="change-username-button" class="mt-4 w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
-                    <i class="fas fa-user-edit mr-2"></i>Cambiar Nombre de Usuario
-                </button>
-                <button id="theme-toggle-button" class="mt-2 w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
-                    <i class="fas fa-sun mr-2"></i>Cambiar Tema
-                </button>
-            </div>
-            <div class="p-4 border-t border-gray-200 mt-auto">
-                <button id="add-contact-button" class="w-full bg-custom-primary text-white py-2 px-4 rounded-md hover:bg-custom-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
-                    <i class="fas fa-user-plus mr-2"></i>Añadir Contacto
-                </button>
-                <button id="create-group-button" class="w-full mt-2 bg-custom-primary text-white py-2 px-4 rounded-md hover:bg-custom-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
-                    <i class="fas fa-plus-circle mr-2"></i>Crear Grupo
-                </button>
-                <button id="mobile-logout-button" class="w-full mt-2 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 md:hidden">
-                    <i class="fas fa-sign-out-alt mr-1"></i>Salir
-                </button>
-            </div>
-        </div>
-
-        <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-30"></div>
-
-        <div class="w-full md:w-3/4 flex flex-col">
-            <div class="md:hidden p-2 bg-custom-surface border-b border-gray-200 flex justify-between items-center">
-                <button id="mobile-sidebar-toggle" class="p-2 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <img src="https://i.imgur.com/CJHtqu5.jpeg" alt="SynergiCode Logo" class="w-12 h-auto">
-            </div>
-
-            <nav class="bg-custom-surface p-4 border-b border-gray-200 flex flex-wrap items-center justify-around">
-                <button id="show-contacts" class="flex-1 text-center p-3 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200 mx-1">
-                    <i class="fas fa-address-book mr-2"></i>Contactos
-                </button>
-                <button id="show-groups" class="flex-1 text-center p-3 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200 mx-1">
-                    <i class="fas fa-users mr-2"></i>Grupos de Trabajo
-                </button>
-                <button id="show-notifications-button" class="flex-1 text-center p-3 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200 relative mx-1">
-                    <i class="fas fa-bell mr-2"></i>Notificaciones
-                    <span id="notification-badge" class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
-                </button>
-                <button id="show-friend-requests-button" class="flex-1 text-center p-3 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200 relative mx-1">
-                    <i class="fas fa-user-friends mr-2"></i>Solicitudes
-                    </button>
-            </nav>
-
-            <!-- Header for current chat -->
-            <div id="chat-header" class="bg-custom-surface p-4 border-b border-gray-200 flex items-center justify-between">
                 <div class="flex items-center">
-                    <img id="current-chat-pic" src="https://placehold.co/50x50/E2E8F0/4A5568?text=Chat" alt="Chat Pic" class="w-12 h-12 rounded-full object-cover mr-3">
+                    <img id="user-profile-pic-sidebar" src="https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF" alt="Foto de perfil" class="w-10 h-10 rounded-full mr-3 border border-gray-300">
                     <div>
-                        <h2 id="current-chat-name" class="text-xl font-semibold text-gray-800">Selecciona un chat</h2>
-                        <p id="current-chat-status" class="text-sm text-gray-500"></p>
+                        <h3 id="user-display-name-sidebar" class="font-semibold text-gray-800">Cargando...</h3>
+                        <p id="user-email-sidebar" class="text-sm text-gray-500 break-words"></p>
                     </div>
                 </div>
-                <!-- Botones de gestión de grupo (añadidos aquí) -->
-                <div class="flex space-x-2 ml-auto">
-                    <button id="add-group-member-button" class="hidden px-3 py-1 bg-custom-primary text-white text-sm rounded-md hover:bg-custom-primary-dark transition-colors">
-                        Añadir Miembro
-                    </button>
-                    <button id="leave-group-button" class="hidden px-3 py-1 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors">
-                        Salir del Grupo
-                    </button>
-                </div>
-            </div>
-
-            <div id="chat-messages-container" class="flex-grow p-4 overflow-y-auto chat-messages bg-gray-50">
-                <!-- Messages will be loaded here -->
-            </div>
-
-            <div id="message-input-area" class="bg-custom-surface p-4 border-t border-gray-200 flex items-center hidden">
-                <input type="file" id="chat-media-upload" accept="image/*,video/*" class="hidden-file-input">
-                <button id="attach-media-button" class="mr-3 bg-gray-200 text-gray-700 p-3 rounded-full hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
-                    <i class="fas fa-paperclip"></i>
-                </button>
-                <input type="text" id="message-input" class="flex-grow px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue" placeholder="Escribe un mensaje...">
-                <button id="send-message-button" class="ml-3 bg-custom-primary text-white p-3 rounded-full hover:bg-custom-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
-                    <i class="fas fa-paper-plane"></i>
+                <button id="close-sidebar-button" class="lg:hidden text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
-
-            <div id="no-chat-selected" class="flex-grow flex items-center justify-center text-gray-500 text-lg">
-                <p>Selecciona un contacto o grupo para empezar a chatear.</p>
+            <nav class="flex-grow p-4 space-y-2">
+                <button id="show-contacts" class="w-full flex items-center p-2 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary text-left">
+                    <i class="fas fa-users mr-3"></i> Contactos
+                </button>
+                <button id="show-groups" class="w-full flex items-center p-2 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary text-left">
+                    <i class="fas fa-layer-group mr-3"></i> Grupos
+                </button>
+            </nav>
+            <div class="p-4 border-t border-gray-200">
+                <button id="create-group-button" class="w-full flex items-center p-2 text-custom-primary rounded-md hover:bg-custom-primary-dark hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary text-left mb-2">
+                    <i class="fas fa-plus-circle mr-3"></i> Crear Grupo
+                </button>
+                <button id="change-username-button" class="w-full flex items-center p-2 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary text-left mb-2">
+                    <i class="fas fa-user-edit mr-3"></i> Cambiar Nombre de Usuario
+                </button>
+                <button id="sign-out-button" class="w-full flex items-center p-2 text-red-600 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 text-left">
+                    <i class="fas fa-sign-out-alt mr-3"></i> Cerrar Sesión
+                </button>
             </div>
+        </aside>
 
-            <div id="contacts-list-view" class="flex-grow p-4 overflow-y-auto bg-gray-50 w-full">
-                <h3 class="text-lg font-semibold text-gray-700 mb-4">Mis Contactos</h3>
-                <ul id="contacts-list" class="space-y-2">
-                    <!-- Contacts will be loaded here -->
-                </ul>
-                <p id="no-contacts-message" class="text-center text-gray-500 mt-4 hidden">No tienes contactos. Añade uno para empezar a chatear.</p>
-            </div>
-
-            <div id="groups-list-view" class="flex-grow p-4 overflow-y-auto bg-gray-50 w-full hidden">
-                <h3 class="text-lg font-semibold text-gray-700 mb-4">Mis Grupos de Trabajo</h3>
-                <ul id="groups-list" class="space-y-2">
-                    <!-- Groups will be loaded here -->
-                </ul>
-                <p id="no-groups-message" class="text-center text-gray-500 mt-4 hidden">No tienes grupos. Crea uno para empezar a colaborar.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modals -->
-
-    <!-- Add Contact Modal -->
-    <div id="add-contact-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
-        <div class="modal-content p-6 w-full max-w-md">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Añadir Contacto</h3>
-            <form id="add-contact-form" class="space-y-4">
-                <div>
-                    <label for="contact-input" class="block text-sm font-medium text-gray-700">Correo Electrónico o Nombre de Usuario</label>
-                    <input type="text" id="contact-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
+        <main class="flex-1 flex flex-col lg:ml-64">
+            <header class="bg-white p-4 shadow-md flex items-center justify-between z-20">
+                <div class="flex items-center">
+                    <button id="mobile-sidebar-toggle" class="lg:hidden mr-3 text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h2 id="current-chat-name" class="text-xl font-semibold text-gray-800">Selecciona un chat</h2>
                 </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" id="cancel-add-contact" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">Enviar Solicitud</button>
+                <div class="flex items-center space-x-3">
+                    <button id="chat-info-button" class="text-gray-500 hover:text-gray-700 hidden" title="Información del Chat">
+                        <i class="fas fa-info-circle text-xl"></i>
+                    </button>
+                    <div id="user-profile-menu" class="relative">
+                        <button id="user-profile-button" class="flex items-center space-x-2 focus:outline-none">
+                            <img id="user-profile-pic-header" src="https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF" alt="Foto de perfil" class="w-8 h-8 rounded-full border border-gray-300">
+                        </button>
+                        <div id="user-menu-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden">
+                            <button id="dropdown-change-username" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">Cambiar Nombre</button>
+                            <button id="dropdown-sign-out" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left">Cerrar Sesión</button>
+                        </div>
+                    </div>
                 </div>
-                <p id="add-contact-message" class="text-sm text-red-600"></p>
-            </form>
-        </div>
-    </div>
+            </header>
 
-    <!-- Create Group Modal -->
-    <div id="create-group-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
-        <div class="modal-content p-6 w-full max-w-md">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Crear Nuevo Grupo de Trabajo</h3>
-            <form id="create-group-form" class="space-y-4">
-                <div>
-                    <label for="group-name" class="block text-sm font-medium text-gray-700">Nombre del Grupo</label>
-                    <input type="text" id="group-name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
+            <div class="flex-1 flex overflow-hidden">
+                <div id="contact-list-section" class="w-full lg:w-1/3 border-r border-gray-200 bg-white flex flex-col">
+                    <div class="p-4 border-b border-gray-200">
+                        <input type="text" id="search-input" placeholder="Buscar contactos o grupos..." class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-custom-primary focus:border-custom-primary">
+                    </div>
+                    <div id="contacts-and-groups-container" class="flex-1 overflow-y-auto">
+                        <div id="contact-list" class="space-y-2 p-4 hidden">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">Contactos</h3>
+                            </div>
+                        <div id="group-list" class="space-y-2 p-4 hidden">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">Grupos</h3>
+                            </div>
+                    </div>
                 </div>
-                <div>
-                    <label for="group-description" class="block text-sm font-medium text-gray-700">Descripción (Opcional)</label>
-                    <textarea id="group-description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm"></textarea>
-                </div>
-                <div>
-                    <label for="group-photo-upload" class="block text-sm font-medium text-gray-700">Foto del Grupo (Opcional)</label>
-                    <div class="mt-1 flex items-center space-x-4">
-                        <img id="group-photo-preview" src="https://placehold.co/80x80/E2E8F0/4A5568?text=Grupo" alt="Group Photo Preview" class="w-20 h-20 rounded-full object-cover border-2 border-gray-300">
-                        <input type="file" id="group-photo-upload" accept="image/*" class="hidden-file-input">
-                        <button type="button" id="upload-group-pic-button" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
-                            <i class="fas fa-upload mr-2"></i>Subir Foto
+
+                <div id="chat-area" class="flex-1 flex flex-col bg-gray-50 hidden">
+                    <div id="chat-messages-container" class="flex-1 p-6 overflow-y-auto space-y-4">
+                        </div>
+                    <div id="message-input-area" class="p-4 bg-white border-t border-gray-200 flex items-center">
+                        <input type="text" id="message-input" placeholder="Escribe un mensaje..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-custom-primary focus:border-custom-primary mr-3">
+                        <button id="send-message-button" class="bg-custom-primary text-white p-3 rounded-full hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
+                            <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
                 </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-3">
+        </div>
+
+    <div id="create-group-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
+        <div class="modal-content p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Crear Nuevo Grupo</h3>
+            <form id="create-group-form" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Miembros (selecciona contactos)</label>
-                    <div id="group-member-selection" class="mt-1 border border-gray-300 rounded-md p-2 max-h-40 overflow-y-auto space-y-1">
-                        <p id="no-contacts-for-group" class="text-sm text-gray-500 hidden">Añade contactos para poder agregarlos a un grupo.</p>
-                    </div>
+                    <label for="group-name-input" class="block text-sm font-medium text-gray-700">Nombre del Grupo</label>
+                    <input type="text" id="group-name-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
                 </div>
+                <div>
+                    <label for="group-members-input" class="block text-sm font-medium text-gray-700">Miembros (Correos Electrónicos separados por comas)</label>
+                    <input type="text" id="group-members-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" placeholder="ej. usuario1@example.com, usuario2@example.com">
+                    <p class="mt-1 text-xs text-gray-500">Asegúrate de que los usuarios existan en tu aplicación.</p>
+                </div>
+                <div id="create-group-message" class="text-red-600 text-sm hidden"></div>
                 <div class="flex justify-end space-x-3">
                     <button type="button" id="cancel-create-group" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">Crear Grupo</button>
-                </div>
-                <p id="create-group-message" class="text-sm text-red-600"></p>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal para Añadir Miembro al Grupo -->
-    <div id="add-group-member-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
-            <h3 class="text-lg font-semibold mb-4">Añadir Miembro al Grupo</h3>
-            <form id="add-group-member-form">
-                <div class="mb-4">
-                    <label for="add-group-member-input" class="block text-sm font-medium text-gray-700 mb-1">Email o Nombre de Usuario</label>
-                    <input type="text" id="add-group-member-input" class="w-full p-2 border border-gray-300 rounded-md focus:ring-custom-primary focus:border-custom-primary">
-                </div>
-                <p id="add-group-member-message" class="text-red-500 text-sm mb-4"></p>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" id="cancel-add-group-member" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark transition-colors">Añadir</button>
+                    <button type="submit" class="px-4 py-2 bg-custom-secondary-blue text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Crear Grupo</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Custom Confirmation Modal -->
-    <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
-            <h3 id="confirm-modal-title" class="text-lg font-semibold mb-4">Confirmación</h3>
-            <p id="confirm-modal-content" class="text-gray-700 mb-6"></p>
-            <div class="flex justify-end space-x-3">
-                <button id="confirm-modal-cancel" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">Cancelar</button>
-                <button id="confirm-modal-ok" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">Confirmar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Message Box for Alerts (kept for critical system messages) -->
-    <div id="message-box" class="hidden fixed inset-0 flex items-center justify-center z-[999] modal-overlay">
-        <div class="modal-content p-6 w-full max-w-sm text-center">
-            <h3 id="message-box-title" class="text-xl font-bold text-gray-800 mb-4"></h3>
-            <p id="message-box-content" class="text-gray-700 mb-6"></p>
-            <button id="message-box-ok" class="px-6 py-2 bg-custom-secondary-blue text-white rounded-md hover:bg-custom-secondary-blue-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">OK</button>
-        </div>
-    </div>
-
-    <!-- Email Sent Modal (kept for registration flow) -->
-    <div id="email-sent-modal" class="hidden fixed inset-0 flex items-center justify-center z-[999] modal-overlay">
-        <div class="modal-content p-8 w-full max-w-sm text-center">
-            <div class="text-custom-primary text-6xl mb-4">
-                <i class="fas fa-envelope-circle-check"></i> </div>
-            <h3 class="text-2xl font-bold text-gray-800 mb-3">¡Email Enviado!</h3>
-            <p class="text-gray-700 mb-6">Por favor, revisa tu bandeja de entrada y haz clic en el enlace de verificación para activar tu cuenta.</p>
-            <button id="email-sent-ok" class="px-6 py-2 bg-custom-secondary-blue text-white rounded-md hover:bg-custom-secondary-blue-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Entendido</button>
-        </div>
-    </div>
-
-    <!-- Forgot Password Modal -->
-    <div id="forgot-password-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
-        <div class="modal-content p-6 w-full max-w-md">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Recuperar Contraseña</h3>
-            <form id="forgot-password-form" class="space-y-4">
-                <div>
-                    <label for="forgot-email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
-                    <input type="email" id="forgot-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" id="cancel-forgot-password" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">Enviar Enlace</button>
-                </div>
-                <p id="forgot-password-message" class="text-sm text-red-600"></p>
-            </form>
-        </div>
-    </div>
-
-    <!-- Notifications Modal -->
-    <div id="notifications-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
-        <div class="modal-content p-6 w-full max-w-lg">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Notificaciones</h3>
-            <ul id="notifications-list" class="space-y-3 max-h-80 overflow-y-auto mb-4">
-                <!-- Notifications will be loaded here -->
-            </ul>
-            <p id="no-notifications-message" class="text-center text-gray-500 hidden">No tienes notificaciones nuevas.</p>
-            <div class="flex justify-end space-x-3">
-                <button type="button" id="clear-notifications-button" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Borrar Todas</button>
-                <button type="button" id="close-notifications-modal" class="px-4 py-2 bg-custom-secondary-blue text-white rounded-md hover:bg-custom-secondary-blue-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Change Username Modal -->
     <div id="change-username-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
         <div class="modal-content p-6 w-full max-w-md">
             <h3 class="text-xl font-bold text-gray-800 mb-4">Cambiar Nombre de Usuario</h3>
@@ -473,16 +228,945 @@
                     <label for="new-username-input" class="block text-sm font-medium text-gray-700">Nuevo Nombre de Usuario</label>
                     <input type="text" id="new-username-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
                 </div>
+                <div id="change-username-message" class="text-red-600 text-sm hidden"></div>
                 <div class="flex justify-end space-x-3">
                     <button type="button" id="cancel-change-username" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cancelar</button>
                     <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">Guardar</button>
                 </div>
-                <p id="change-username-message" class="text-sm text-red-600"></p>
             </form>
         </div>
     </div>
 
+    <div id="chat-info-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
+        <div class="modal-content p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Información del Chat</h3>
+            <div id="chat-info-details">
+                </div>
+            <div class="flex justify-end space-x-3 mt-4">
+                <button type="button" id="close-chat-info-modal" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cerrar</button>
+                <button type="button" id="leave-group-button" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 hidden">Abandonar Grupo</button>
+            </div>
+        </div>
+    </div>
 
-    <script type="module" src="script.js"></script>
+
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import {
+            getAuth,
+            onAuthStateChanged,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut,
+            updateProfile,
+            sendEmailVerification,
+            sendPasswordResetEmail
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import {
+            getFirestore,
+            doc,
+            getDoc,
+            setDoc,
+            updateDoc,
+            onSnapshot,
+            collection,
+            query,
+            where,
+            addDoc,
+            getDocs,
+            serverTimestamp,
+            orderBy,
+            limit
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Global Variables ---
+        let app;
+        let db;
+        let auth;
+        let currentUserId = null;
+        let currentUserEmail = null;
+        let userDisplayName = null;
+        let userProfilePicUrl = "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF"; // Default profile picture
+        let activeChat = null; // Stores { id: 'chatId', type: 'user' | 'group', name: 'Chat Name' }
+        let contacts = [];
+        let groups = [];
+        let unsubscribeMessages = null;
+        let unsubscribeContacts = null;
+        let unsubscribeGroups = null;
+        let notifications = [];
+        let notificationIdCounter = 0;
+
+        // Firebase Configuration (ensure this matches your Firebase project settings)
+        // The `typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) :`
+        // part is for environments like Google Cloud Shell where config might be injected.
+        // For local development, the hardcoded values are used.
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyASX4A-fd3tvzWByAkqgdXMB9DbV4r_OLI",
+            authDomain: "synergicode.firebaseapp.com",
+            projectId: "synergicode",
+            storageBucket: "synergicode.firebasestorage.app",
+            messagingSenderId: "184895241849",
+            appId: "1:184895241849:web:517e25b7535f1530bc9ea8",
+            measurementId: "G-Y0CDV2S6XB"
+        };
+
+        // Initialize Firebase
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } catch (error) {
+            console.error("Error initializing Firebase:", error);
+            addNotification('Error de Inicialización', 'No se pudo inicializar Firebase. Revisa tu consola para más detalles.', 'error');
+        }
+
+        // --- DOM Elements ---
+        const authSection = document.getElementById('auth-section');
+        const mainApp = document.getElementById('main-app');
+        const authForm = document.getElementById('auth-form');
+        const authTitle = document.getElementById('auth-title');
+        const authButtonText = document.getElementById('auth-button-text');
+        const toggleAuthModeButton = document.getElementById('toggle-auth-mode');
+        const forgotPasswordButton = document.getElementById('forgot-password');
+        const authMessage = document.getElementById('auth-message');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+
+        const userDisplayNameSidebar = document.getElementById('user-display-name-sidebar');
+        const userEmailSidebar = document.getElementById('user-email-sidebar');
+        const userProfilePicSidebar = document.getElementById('user-profile-pic-sidebar');
+        const userProfilePicHeader = document.getElementById('user-profile-pic-header');
+
+        const signOutButton = document.getElementById('sign-out-button');
+        const currentChatName = document.getElementById('current-chat-name');
+        const chatMessagesContainer = document.getElementById('chat-messages-container');
+        const messageInput = document.getElementById('message-input');
+        const sendMessageButton = document.getElementById('send-message-button');
+        const contactListSection = document.getElementById('contact-list-section');
+        const chatArea = document.getElementById('chat-area');
+        const contactList = document.getElementById('contact-list');
+        const groupList = document.getElementById('group-list');
+        const showContactsButton = document.getElementById('show-contacts');
+        const showGroupsButton = document.getElementById('show-groups');
+        const createGroupButton = document.getElementById('create-group-button');
+        const createGroupModal = document.getElementById('create-group-modal');
+        const cancelCreateGroupButton = document.getElementById('cancel-create-group');
+        const createGroupForm = document.getElementById('create-group-form');
+        const groupNameInput = document.getElementById('group-name-input');
+        const groupMembersInput = document.getElementById('group-members-input');
+        const createGroupMessage = document.getElementById('create-group-message');
+
+        const changeUsernameButton = document.getElementById('change-username-button');
+        const changeUsernameModal = document.getElementById('change-username-modal');
+        const cancelChangeUsernameButton = document.getElementById('cancel-change-username');
+        const changeUsernameForm = document.getElementById('change-username-form');
+        const newUsernameInput = document.getElementById('new-username-input');
+        const changeUsernameMessage = document.getElementById('change-username-message');
+
+        const mobileSidebarToggle = document.getElementById('mobile-sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('mobile-sidebar-overlay');
+        const closeSidebarButton = document.getElementById('close-sidebar-button');
+
+        const userProfileButton = document.getElementById('user-profile-button');
+        const userMenuDropdown = document.getElementById('user-menu-dropdown');
+        const dropdownChangeUsername = document.getElementById('dropdown-change-username');
+        const dropdownSignOut = document.getElementById('dropdown-sign-out');
+
+        const searchInput = document.getElementById('search-input');
+        const contactsAndGroupsContainer = document.getElementById('contacts-and-groups-container');
+
+        const chatInfoButton = document.getElementById('chat-info-button');
+        const chatInfoModal = document.getElementById('chat-info-modal');
+        const closeChatInfoModalButton = document.getElementById('close-chat-info-modal');
+        const chatInfoDetails = document.getElementById('chat-info-details');
+        const leaveGroupButton = document.getElementById('leave-group-button');
+
+        // --- Auth Mode Toggle (Login/Register) ---
+        let isLoginMode = true;
+
+        toggleAuthModeButton.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            authTitle.textContent = isLoginMode ? 'Iniciar Sesión' : 'Registrarse';
+            authButtonText.textContent = isLoginMode ? 'Iniciar Sesión' : 'Registrarse';
+            toggleAuthModeButton.textContent = isLoginMode ? 'Regístrate' : 'Iniciar Sesión';
+            authMessage.classList.add('hidden'); // Clear previous messages
+        });
+
+        // --- Auth Form Submission (Login/Register) ---
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            authMessage.classList.add('hidden'); // Hide any previous error messages
+
+            if (!email || !password) {
+                displayAuthMessage('Por favor, ingresa tu correo y contraseña.', 'error');
+                return;
+            }
+
+            try {
+                if (isLoginMode) {
+                    // Login
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    // Register
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+
+                    // Set initial username based on email prefix
+                    const defaultUsername = email.split('@')[0];
+                    await updateProfile(user, {
+                        displayName: defaultUsername
+                    });
+
+                    // Create user document in Firestore
+                    await setDoc(doc(db, 'users', user.uid), {
+                        email: user.email,
+                        username: defaultUsername,
+                        createdAt: serverTimestamp()
+                    });
+
+                    // Send email verification
+                    // await sendEmailVerification(user);
+                    // displayAuthMessage('Registro exitoso. Se ha enviado un correo de verificación. Por favor, revisa tu bandeja de entrada.', 'success');
+                    addNotification('Registro Exitoso', 'Tu cuenta ha sido creada. ¡Bienvenido!', 'success');
+                }
+            } catch (error) {
+                console.error("Authentication Error:", error);
+                handleAuthError(error);
+            }
+        });
+
+        // --- Forgot Password ---
+        forgotPasswordButton.addEventListener('click', async () => {
+            const email = emailInput.value;
+            if (!email) {
+                displayAuthMessage('Por favor, ingresa tu correo electrónico para restablecer la contraseña.', 'error');
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                displayAuthMessage('Se ha enviado un correo electrónico para restablecer tu contraseña. Revisa tu bandeja de entrada.', 'success');
+            } catch (error) {
+                console.error("Password Reset Error:", error);
+                handleAuthError(error);
+            }
+        });
+
+        // --- Authentication State Change Listener ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                currentUserEmail = user.email;
+
+                // Fetch user's custom username from Firestore
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+
+                if (userDocSnap.exists()) {
+                    userDisplayName = userDocSnap.data().username || user.displayName || user.email;
+                    userProfilePicUrl = userDocSnap.data().profilePicUrl || userProfilePicUrl; // Use custom if available
+                } else {
+                    // If no user document, create one with default username
+                    userDisplayName = user.displayName || user.email.split('@')[0];
+                    await setDoc(userDocRef, {
+                        email: user.email,
+                        username: userDisplayName,
+                        createdAt: serverTimestamp()
+                    });
+                }
+
+                // Update UI elements
+                userDisplayNameSidebar.textContent = userDisplayName;
+                userEmailSidebar.textContent = currentUserEmail;
+                userProfilePicSidebar.src = userProfilePicUrl;
+                userProfilePicHeader.src = userProfilePicUrl;
+
+                authSection.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                addNotification('Sesión Iniciada', `Bienvenido, ${userDisplayName}`, 'success');
+
+                // Load initial data
+                loadContacts();
+                loadGroups();
+                showContactsList(); // Default view: contacts
+
+            } else {
+                currentUserId = null;
+                currentUserEmail = null;
+                userDisplayName = null;
+                userProfilePicUrl = "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF";
+
+                authSection.classList.remove('hidden');
+                mainApp.classList.add('hidden');
+                contactList.innerHTML = ''; // Clear lists
+                groupList.innerHTML = '';
+                chatMessagesContainer.innerHTML = ''; // Clear chat
+                activeChat = null;
+                currentChatName.textContent = 'Selecciona un chat';
+                chatArea.classList.add('hidden');
+                contactListSection.classList.remove('hidden'); // Ensure contact list is visible
+                chatInfoButton.classList.add('hidden');
+                
+                // Unsubscribe from all listeners
+                if (unsubscribeMessages) unsubscribeMessages();
+                if (unsubscribeContacts) unsubscribeContacts();
+                if (unsubscribeGroups) unsubscribeGroups();
+                
+                addNotification('Sesión Cerrada', 'Has cerrado sesión correctamente.', 'info');
+            }
+        });
+
+        // --- Logout ---
+        signOutButton.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Error signing out:", error);
+                addNotification('Error al Cerrar Sesión', 'No se pudo cerrar sesión. Inténtalo de nuevo.', 'error');
+            }
+        });
+
+        dropdownSignOut.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Error signing out:", error);
+                addNotification('Error al Cerrar Sesión', 'No se pudo cerrar sesión. Inténtalo de nuevo.', 'error');
+            }
+        });
+
+        // --- Notification System ---
+        function addNotification(title, message, type = 'info', duration = 5000) {
+            const notificationId = notificationIdCounter++;
+            const notification = { id: notificationId, title, message, type };
+            notifications.push(notification);
+            renderNotifications();
+
+            setTimeout(() => {
+                removeNotification(notificationId);
+            }, duration);
+        }
+
+        function removeNotification(id) {
+            notifications = notifications.filter(n => n.id !== id);
+            renderNotifications();
+        }
+
+        function renderNotifications() {
+            const container = document.getElementById('notification-container');
+            container.innerHTML = ''; // Clear existing notifications
+
+            notifications.forEach(notif => {
+                const div = document.createElement('div');
+                div.className = `relative p-4 rounded-md shadow-lg text-white max-w-xs transition-all duration-300 transform translate-x-0 opacity-100`;
+                
+                let bgColorClass = '';
+                let iconClass = '';
+                if (notif.type === 'success') {
+                    bgColorClass = 'bg-green-500-custom';
+                    iconClass = 'fas fa-check-circle';
+                } else if (notif.type === 'error') {
+                    bgColorClass = 'bg-red-500-custom';
+                    iconClass = 'fas fa-exclamation-circle';
+                } else {
+                    bgColorClass = 'bg-blue-500-custom';
+                    iconClass = 'fas fa-info-circle';
+                }
+
+                div.classList.add(bgColorClass);
+
+                div.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="${iconClass} mr-2 text-xl"></i>
+                        <div class="flex-1">
+                            <h4 class="font-bold">${notif.title}</h4>
+                            <p class="text-sm">${notif.message}</p>
+                        </div>
+                        <button class="absolute top-1 right-1 text-white opacity-75 hover:opacity-100" onclick="removeNotificationFromDOM(${notif.id})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Global function for onclick in notification close button
+        window.removeNotificationFromDOM = (id) => {
+            removeNotification(id);
+        };
+
+        // Helper for Auth messages
+        function displayAuthMessage(message, type) {
+            authMessage.textContent = message;
+            authMessage.className = `mt-4 text-center text-sm font-medium ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
+            authMessage.classList.remove('hidden');
+        }
+
+        // Helper to handle authentication errors
+        function handleAuthError(error) {
+            let message = 'Ocurrió un error inesperado. Inténtalo de nuevo.';
+            switch (error.code) {
+                case 'auth/invalid-email':
+                    message = 'El formato del correo electrónico es inválido.';
+                    break;
+                case 'auth/user-disabled':
+                    message = 'Este usuario ha sido deshabilitado.';
+                    break;
+                case 'auth/user-not-found':
+                    message = 'No se encontró un usuario con este correo electrónico.';
+                    break;
+                case 'auth/wrong-password':
+                    message = 'Contraseña incorrecta.';
+                    break;
+                case 'auth/email-already-in-use':
+                    message = 'El correo electrónico ya está registrado.';
+                    break;
+                case 'auth/weak-password':
+                    message = 'La contraseña debe tener al menos 6 caracteres.';
+                    break;
+                case 'auth/operation-not-allowed':
+                    message = 'La autenticación por correo y contraseña no está habilitada.';
+                    break;
+                case 'auth/missing-email':
+                    message = 'Por favor, ingresa un correo electrónico.';
+                    break;
+                case 'auth/missing-password':
+                    message = 'Por favor, ingresa una contraseña.';
+                    break;
+                default:
+                    message = error.message;
+                    break;
+            }
+            displayAuthMessage(message, 'error');
+            addNotification('Error de Autenticación', message, 'error');
+        }
+
+        // --- Chat Logic ---
+        async function loadMessages(chatId, chatType) {
+            if (unsubscribeMessages) {
+                unsubscribeMessages(); // Detach previous listener
+            }
+
+            chatMessagesContainer.innerHTML = '<div class="text-center text-gray-500">Cargando mensajes...</div>';
+
+            const messagesCollectionRef = collection(db, 'chats', chatId, 'messages');
+            const messagesQuery = query(messagesCollectionRef, orderBy('timestamp', 'asc'), limit(50)); // Limit to last 50 messages
+
+            unsubscribeMessages = onSnapshot(messagesQuery, async (snapshot) => {
+                chatMessagesContainer.innerHTML = ''; // Clear existing messages
+                const fragment = document.createDocumentFragment();
+
+                for (const doc of snapshot.docs) {
+                    const messageData = doc.data();
+                    const senderId = messageData.senderId;
+                    let senderDisplayName = "Desconocido";
+
+                    if (senderId === currentUserId) {
+                        senderDisplayName = userDisplayName;
+                    } else {
+                        // Fetch sender's username
+                        const senderDocRef = doc(db, 'users', senderId);
+                        const senderDocSnap = await getDoc(senderDocRef);
+                        if (senderDocSnap.exists()) {
+                            senderDisplayName = senderDocSnap.data().username || senderDocSnap.data().email.split('@')[0];
+                        } else {
+                            // If user not found, try to use email from message (if available)
+                            senderDisplayName = messageData.senderEmail || "Desconocido";
+                        }
+                    }
+
+                    const messageElement = createMessageElement(messageData, senderDisplayName, senderId === currentUserId);
+                    fragment.appendChild(messageElement);
+                }
+                chatMessagesContainer.appendChild(fragment);
+                chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
+            }, (error) => {
+                console.error("Error loading messages:", error);
+                addNotification('Error al Cargar Mensajes', 'No se pudieron cargar los mensajes.', 'error');
+                chatMessagesContainer.innerHTML = '<div class="text-center text-red-500">Error al cargar mensajes.</div>';
+            });
+        }
+
+        function createMessageElement(message, senderDisplayName, isCurrentUser) {
+            const div = document.createElement('div');
+            div.className = `flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = `max-w-xs lg:max-w-md px-4 py-2 rounded-lg shadow ${
+                isCurrentUser ? 'bg-custom-primary text-white' : 'bg-white text-gray-800'
+            }`;
+
+            if (!isCurrentUser) {
+                const senderNameSpan = document.createElement('div');
+                senderNameSpan.className = 'font-semibold text-sm mb-1';
+                senderNameSpan.textContent = senderDisplayName;
+                contentDiv.appendChild(senderNameSpan);
+            }
+
+            const messageText = document.createElement('p');
+            messageText.className = 'text-sm';
+            messageText.textContent = message.text;
+            contentDiv.appendChild(messageText);
+
+            const timestamp = message.timestamp ? new Date(message.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Ahora';
+            const timestampSpan = document.createElement('span');
+            timestampSpan.className = `block text-xs mt-1 ${isCurrentUser ? 'text-indigo-200' : 'text-gray-400'} text-right`;
+            timestampSpan.textContent = timestamp;
+            contentDiv.appendChild(timestampSpan);
+
+            div.appendChild(contentDiv);
+            return div;
+        }
+
+        sendMessageButton.addEventListener('click', async () => {
+            const messageText = messageInput.value.trim();
+            if (messageText === '' || !activeChat) {
+                return;
+            }
+
+            try {
+                const messageData = {
+                    senderId: currentUserId,
+                    senderEmail: currentUserEmail,
+                    text: messageText,
+                    timestamp: serverTimestamp()
+                };
+
+                await addDoc(collection(db, 'chats', activeChat.id, 'messages'), messageData);
+                messageInput.value = ''; // Clear input
+                chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
+            } catch (error) {
+                console.error("Error sending message:", error);
+                addNotification('Error al Enviar Mensaje', 'No se pudo enviar el mensaje.', 'error');
+            }
+        });
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessageButton.click();
+            }
+        });
+
+        // --- Contact/Group List Management ---
+        async function loadContacts() {
+            if (unsubscribeContacts) {
+                unsubscribeContacts();
+            }
+
+            const usersCollectionRef = collection(db, 'users');
+            // Fetch all users except the current one
+            const usersQuery = query(usersCollectionRef, where('email', '!=', currentUserEmail));
+
+            unsubscribeContacts = onSnapshot(usersQuery, (snapshot) => {
+                contacts = [];
+                snapshot.forEach(doc => {
+                    const userData = doc.data();
+                    // Ensure the user has a username, otherwise use email prefix
+                    const username = userData.username || userData.email.split('@')[0];
+                    contacts.push({
+                        id: doc.id,
+                        email: userData.email,
+                        username: username,
+                        profilePicUrl: userData.profilePicUrl || "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF"
+                    });
+                });
+                renderContactsAndGroups();
+            }, (error) => {
+                console.error("Error loading contacts:", error);
+                addNotification('Error al Cargar Contactos', 'No se pudieron cargar los contactos.', 'error');
+            });
+        }
+
+        async function loadGroups() {
+            if (unsubscribeGroups) {
+                unsubscribeGroups();
+            }
+
+            const groupsCollectionRef = collection(db, 'groups');
+            // Fetch groups where the current user is a member
+            const groupsQuery = query(groupsCollectionRef, where('members', 'array-contains', currentUserId));
+
+            unsubscribeGroups = onSnapshot(groupsQuery, (snapshot) => {
+                groups = [];
+                snapshot.forEach(doc => {
+                    groups.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                renderContactsAndGroups();
+            }, (error) => {
+                console.error("Error loading groups:", error);
+                addNotification('Error al Cargar Grupos', 'No se pudieron cargar los grupos.', 'error');
+            });
+        }
+
+        function renderContactsAndGroups() {
+            contactList.innerHTML = '<h3 class="text-lg font-semibold text-gray-700 mb-2">Contactos</h3>';
+            groupList.innerHTML = '<h3 class="text-lg font-semibold text-gray-700 mb-2">Grupos</h3>';
+
+            const searchTerm = searchInput.value.toLowerCase();
+
+            contacts.forEach(contact => {
+                if (contact.username.toLowerCase().includes(searchTerm) || contact.email.toLowerCase().includes(searchTerm)) {
+                    const div = document.createElement('div');
+                    div.className = `flex items-center p-3 rounded-lg hover:bg-gray-200 cursor-pointer ${activeChat && activeChat.id === contact.id ? 'bg-gray-200' : ''}`;
+                    div.innerHTML = `
+                        <img src="${contact.profilePicUrl}" alt="Foto de perfil" class="w-10 h-10 rounded-full mr-3 border border-gray-300">
+                        <div>
+                            <p class="font-semibold text-gray-800">${contact.username}</p>
+                            <p class="text-sm text-gray-500">${contact.email}</p>
+                        </div>
+                    `;
+                    div.addEventListener('click', () => openChat(contact.id, 'user', contact.username));
+                    contactList.appendChild(div);
+                }
+            });
+
+            groups.forEach(group => {
+                if (group.name.toLowerCase().includes(searchTerm)) {
+                    const div = document.createElement('div');
+                    div.className = `flex items-center p-3 rounded-lg hover:bg-gray-200 cursor-pointer ${activeChat && activeChat.id === group.id ? 'bg-gray-200' : ''}`;
+                    div.innerHTML = `
+                        <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center mr-3">
+                            <i class="fas fa-users text-xl text-gray-600"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800">${group.name}</p>
+                            <p class="text-sm text-gray-500">${group.members.length} miembros</p>
+                        </div>
+                    `;
+                    div.addEventListener('click', () => openChat(group.id, 'group', group.name));
+                    groupList.appendChild(div);
+                }
+            });
+
+            // If lists are empty after filtering, display a message
+            if (contactList.children.length === 1) { // Only the heading
+                const noContacts = document.createElement('p');
+                noContacts.className = "text-center text-gray-500 text-sm mt-4";
+                noContacts.textContent = "No se encontraron contactos.";
+                contactList.appendChild(noContacts);
+            }
+            if (groupList.children.length === 1) { // Only the heading
+                const noGroups = document.createElement('p');
+                noGroups.className = "text-center text-gray-500 text-sm mt-4";
+                noGroups.textContent = "No se encontraron grupos.";
+                groupList.appendChild(noGroups);
+            }
+        }
+
+        searchInput.addEventListener('input', renderContactsAndGroups);
+
+        function openChat(chatId, chatType, chatName) {
+            activeChat = { id: chatId, type: chatType, name: chatName };
+            currentChatName.textContent = chatName;
+            chatArea.classList.remove('hidden');
+            contactListSection.classList.add('hidden'); // Hide contact list on mobile
+            loadMessages(chatId, chatType);
+            renderContactsAndGroups(); // Re-render to highlight active chat
+            chatInfoButton.classList.remove('hidden'); // Show info button
+
+            // Hide mobile sidebar after selecting chat
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        }
+
+        showContactsButton.addEventListener('click', showContactsList);
+        showGroupsButton.addEventListener('click', showGroupsList);
+
+        function showContactsList() {
+            contactList.classList.remove('hidden');
+            groupList.classList.add('hidden');
+            showContactsButton.classList.add('bg-gray-200');
+            showGroupsButton.classList.remove('bg-gray-200');
+        }
+
+        function showGroupsList() {
+            groupList.classList.remove('hidden');
+            contactList.classList.add('hidden');
+            showGroupsButton.classList.add('bg-gray-200');
+            showContactsButton.classList.remove('bg-gray-200');
+        }
+
+        // --- Create Group Modal Logic ---
+        createGroupButton.addEventListener('click', () => {
+            createGroupModal.classList.remove('hidden');
+            groupNameInput.value = '';
+            groupMembersInput.value = '';
+            createGroupMessage.classList.add('hidden');
+        });
+
+        cancelCreateGroupButton.addEventListener('click', () => {
+            createGroupModal.classList.add('hidden');
+        });
+
+        createGroupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const groupName = groupNameInput.value.trim();
+            const memberEmailsString = groupMembersInput.value.trim();
+            createGroupMessage.classList.add('hidden');
+
+            if (!groupName) {
+                createGroupMessage.textContent = 'El nombre del grupo es obligatorio.';
+                createGroupMessage.classList.remove('hidden');
+                return;
+            }
+
+            let memberEmails = [];
+            if (memberEmailsString) {
+                memberEmails = memberEmailsString.split(',').map(email => email.trim()).filter(email => email !== '');
+            }
+            // Add current user to members by default
+            if (!memberEmails.includes(currentUserEmail)) {
+                memberEmails.push(currentUserEmail);
+            }
+
+            try {
+                // Resolve member emails to UIDs
+                const memberUids = [];
+                const usersCollectionRef = collection(db, 'users');
+
+                for (const email of memberEmails) {
+                    const q = query(usersCollectionRef, where('email', '==', email));
+                    const querySnapshot = await getDocs(q);
+                    if (!querySnapshot.empty) {
+                        memberUids.push(querySnapshot.docs[0].id);
+                    } else {
+                        // Notify if a member email isn't found
+                        addNotification('Miembro No Encontrado', `El usuario con correo ${email} no existe.`, 'warning', 7000);
+                        console.warn(`User with email ${email} not found.`);
+                    }
+                }
+
+                if (memberUids.length === 0) {
+                    createGroupMessage.textContent = 'No se pudieron encontrar miembros válidos para el grupo.';
+                    createGroupMessage.classList.remove('hidden');
+                    return;
+                }
+
+                // Create the group in Firestore
+                await addDoc(collection(db, 'groups'), {
+                    name: groupName,
+                    members: memberUids,
+                    createdAt: serverTimestamp(),
+                    adminId: currentUserId // The user who created the group is the admin
+                });
+
+                addNotification('Grupo Creado', `El grupo "${groupName}" ha sido creado con éxito.`, 'success');
+                createGroupModal.classList.add('hidden');
+            } catch (error) {
+                console.error("Error creating group:", error);
+                createGroupMessage.textContent = 'Hubo un error al crear el grupo. Inténtalo de nuevo.';
+                createGroupMessage.classList.remove('hidden');
+                addNotification('Error al Crear Grupo', 'Hubo un error al crear el grupo.', 'error');
+            }
+        });
+
+        // --- Change Username Modal Logic ---
+        changeUsernameButton.addEventListener('click', () => {
+            changeUsernameModal.classList.remove('hidden');
+            newUsernameInput.value = userDisplayName || ''; // Pre-fill with current username
+            changeUsernameMessage.classList.add('hidden');
+        });
+
+        dropdownChangeUsername.addEventListener('click', () => {
+            changeUsernameModal.classList.remove('hidden');
+            newUsernameInput.value = userDisplayName || ''; // Pre-fill with current username
+            changeUsernameMessage.classList.add('hidden');
+            userMenuDropdown.classList.add('hidden'); // Close dropdown
+        });
+
+        cancelChangeUsernameButton.addEventListener('click', () => {
+            changeUsernameModal.classList.add('hidden');
+        });
+
+        changeUsernameForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newUsername = newUsernameInput.value.trim();
+            changeUsernameMessage.classList.add('hidden');
+
+            if (!newUsername) {
+                changeUsernameMessage.textContent = 'El nombre de usuario no puede estar vacío.';
+                changeUsernameMessage.classList.remove('hidden');
+                return;
+            }
+
+            if (newUsername === userDisplayName) {
+                changeUsernameMessage.textContent = 'El nuevo nombre de usuario es igual al actual.';
+                changeUsernameMessage.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const userDocRef = doc(db, 'users', currentUserId);
+                await updateDoc(userDocRef, {
+                    username: newUsername
+                });
+
+                userDisplayName = newUsername; // Update global variable
+                userDisplayNameSidebar.textContent = newUsername; // Update sidebar UI
+                addNotification('Nombre de Usuario Actualizado', `Tu nombre de usuario se ha cambiado a "${newUsername}" correctamente.`, 'success');
+                changeUsernameModal.classList.add('hidden');
+            } catch (error) {
+                console.error('Error al cambiar nombre de usuario:', error);
+                let errorMessage = `Hubo un problema al cambiar el nombre de usuario.`;
+                if (error.code === 'permission-denied' || (error.message && error.message.includes('Missing or insufficient permissions'))) {
+                    errorMessage = 'No tienes permisos suficientes para cambiar el nombre de usuario. Asegúrate de que las reglas de seguridad de Firestore estén configuradas correctamente.';
+                }
+                changeUsernameMessage.textContent = errorMessage;
+                changeUsernameMessage.classList.remove('hidden');
+                addNotification('Error al Cambiar Nombre de Usuario', errorMessage, 'error');
+            }
+        });
+
+        // --- Mobile Sidebar Toggle ---
+        mobileSidebarToggle.addEventListener('click', () => {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+        });
+
+        closeSidebarButton.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        // --- User Profile Dropdown ---
+        userProfileButton.addEventListener('click', () => {
+            userMenuDropdown.classList.toggle('hidden');
+        });
+
+        // Close dropdown if clicked outside
+        document.addEventListener('click', (event) => {
+            if (!userProfileButton.contains(event.target) && !userMenuDropdown.contains(event.target)) {
+                userMenuDropdown.classList.add('hidden');
+            }
+        });
+
+        // --- Chat Info Modal Logic ---
+        chatInfoButton.addEventListener('click', async () => {
+            if (!activeChat) return;
+
+            chatInfoDetails.innerHTML = '';
+            leaveGroupButton.classList.add('hidden');
+
+            const titleElement = document.createElement('h4');
+            titleElement.className = 'font-semibold text-lg mb-2';
+            titleElement.textContent = `Nombre: ${activeChat.name}`;
+            chatInfoDetails.appendChild(titleElement);
+
+            if (activeChat.type === 'user') {
+                const contactDocRef = doc(db, 'users', activeChat.id);
+                const contactDocSnap = await getDoc(contactDocRef);
+                if (contactDocSnap.exists()) {
+                    const contactData = contactDocSnap.data();
+                    const emailElement = document.createElement('p');
+                    emailElement.className = 'text-gray-700';
+                    emailElement.textContent = `Correo: ${contactData.email}`;
+                    chatInfoDetails.appendChild(emailElement);
+                } else {
+                    const messageElement = document.createElement('p');
+                    messageElement.className = 'text-gray-700';
+                    messageElement.textContent = 'Información de contacto no disponible.';
+                    chatInfoDetails.appendChild(messageElement);
+                }
+            } else if (activeChat.type === 'group') {
+                const groupDocRef = doc(db, 'groups', activeChat.id);
+                const groupDocSnap = await getDoc(groupDocRef);
+
+                if (groupDocSnap.exists()) {
+                    const groupData = groupDocSnap.data();
+                    const membersTitle = document.createElement('p');
+                    membersTitle.className = 'font-semibold mt-3 mb-1';
+                    membersTitle.textContent = 'Miembros:';
+                    chatInfoDetails.appendChild(membersTitle);
+
+                    const membersList = document.createElement('ul');
+                    membersList.className = 'list-disc list-inside text-gray-700';
+                    chatInfoDetails.appendChild(membersList);
+
+                    // Fetch usernames for each member UID
+                    for (const memberId of groupData.members) {
+                        const memberDocRef = doc(db, 'users', memberId);
+                        const memberDocSnap = await getDoc(memberDocRef);
+                        const memberName = memberDocSnap.exists() ? (memberDocSnap.data().username || memberDocSnap.data().email.split('@')[0]) : 'Usuario Desconocido';
+                        const listItem = document.createElement('li');
+                        listItem.textContent = memberName;
+                        if (memberId === groupData.adminId) {
+                            listItem.textContent += ' (Admin)';
+                            listItem.classList.add('font-medium');
+                        }
+                        if (memberId === currentUserId) {
+                            listItem.classList.add('text-custom-primary', 'font-semibold');
+                        }
+                        membersList.appendChild(listItem);
+                    }
+                    leaveGroupButton.classList.remove('hidden'); // Show leave group button for groups
+                } else {
+                    const messageElement = document.createElement('p');
+                    messageElement.className = 'text-gray-700';
+                    messageElement.textContent = 'Información del grupo no disponible.';
+                    chatInfoDetails.appendChild(messageElement);
+                }
+            }
+
+            chatInfoModal.classList.remove('hidden');
+        });
+
+        closeChatInfoModalButton.addEventListener('click', () => {
+            chatInfoModal.classList.add('hidden');
+        });
+
+        leaveGroupButton.addEventListener('click', async () => {
+            if (!activeChat || activeChat.type !== 'group' || !currentUserId) return;
+
+            if (confirm(`¿Estás seguro de que quieres abandonar el grupo "${activeChat.name}"?`)) {
+                try {
+                    const groupDocRef = doc(db, 'groups', activeChat.id);
+                    const groupDocSnap = await getDoc(groupDocRef);
+
+                    if (groupDocSnap.exists()) {
+                        const groupData = groupDocSnap.data();
+                        const updatedMembers = groupData.members.filter(memberId => memberId !== currentUserId);
+
+                        if (updatedMembers.length === 0) {
+                            // If no members left, delete the group
+                            await deleteDoc(groupDocRef);
+                            addNotification('Grupo Eliminado', `El grupo "${activeChat.name}" ha sido eliminado.`, 'info');
+                        } else {
+                            // Update group members
+                            await updateDoc(groupDocRef, {
+                                members: updatedMembers
+                            });
+                            addNotification('Grupo Abandonado', `Has abandonado el grupo "${activeChat.name}" correctamente.`, 'success');
+                        }
+
+                        // Close chat info modal and reset active chat
+                        chatInfoModal.classList.add('hidden');
+                        activeChat = null;
+                        currentChatName.textContent = 'Selecciona un chat';
+                        chatArea.classList.add('hidden');
+                        chatMessagesContainer.innerHTML = '';
+                        chatInfoButton.classList.add('hidden');
+                        loadGroups(); // Reload groups to reflect changes
+                        showGroupsList(); // Show group list
+                    }
+                } catch (error) {
+                    console.error('Error al abandonar el grupo:', error);
+                    addNotification('Error', 'Hubo un problema al abandonar el grupo.', 'error');
+                }
+            }
+        });
+
+    </script>
 </body>
 </html>
