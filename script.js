@@ -92,7 +92,7 @@ const userAgeDisplay = document.getElementById('user-age-display');
 const changeUsernameButton = document.getElementById('change-username-button');
 
 const showContactsButton = document.getElementById('show-contacts');
-const showGroupsButton = document = document.getElementById('show-groups');
+const showGroupsButton = document.getElementById('show-groups'); // Corrected line
 const addContactButton = document.getElementById('add-contact-button');
 const createGroupButton = document.getElementById('create-group-button');
 const chatHeader = document.getElementById('chat-header');
