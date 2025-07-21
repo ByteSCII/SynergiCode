@@ -1,0 +1,103 @@
+/* CSS Variables for Theming - Only light theme variables remain */
+:root {
+    --color-primary: #4CAF50;
+    --color-primary-dark: #43A047;
+    --color-secondary-blue: #2196F3;
+    --color-secondary-blue-dark: #1976D2;
+    --color-darkblue: #3B3B6B;
+    --color-background: #f0f2f5;
+    --color-surface: #ffffff;
+    --color-text-default: #374151; /* gray-800 */
+    --color-text-secondary: #6B7280; /* gray-500 */
+    --color-border: #E5E7EB; /* gray-200 */
+    --color-input-border: #D1D5DB; /* gray-300 */
+    --color-message-bg-self: var(--color-secondary-blue);
+    --color-message-text-self: #ffffff;
+    --color-message-bg-other: #e5e7eb; /* gray-200 */
+    --color-message-text-other: #374151; /* gray-800 */
+    --color-green-status: #22C55E; /* green-500 */
+    --color-gray-status: #9CA3AF; /* gray-400 */
+    --color-red-error: #EF4444; /* red-600 */
+    --color-green-success: #22C55E; /* green-600 */
+    --color-blue-info: #3B82F6; /* blue-500 */
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--color-background);
+    color: var(--color-text-default);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Applying CSS variables to Tailwind-like classes */
+.bg-custom-primary { background-color: var(--color-primary); }
+.hover\:bg-custom-primary-dark:hover { background-color: var(--color-primary-dark); }
+.focus\:ring-custom-primary { --tw-ring-color: var(--color-primary); }
+
+.text-custom-darkblue { color: var(--color-darkblue); }
+.bg-custom-secondary-blue { background-color: var(--color-secondary-blue); }
+.hover\:bg-custom-secondary-blue-dark:hover { background-color: var(--color-secondary-blue-dark); }
+.focus\:ring-custom-secondary-blue { --tw-ring-color: var(--color-secondary-blue); }
+
+/* General element styling based on variables */
+.bg-white { background-color: var(--color-surface); }
+.bg-gray-100 { background-color: var(--color-background); } /* Main app background */
+.bg-gray-50 { background-color: var(--color-background); } /* Chat area, lists background */
+.bg-gray-200 { background-color: var(--color-message-bg-other); color: var(--color-message-text-other); } /* Other messages, general gray buttons */
+.hover\:bg-gray-200:hover { background-color: var(--color-border); } /* Hover for lists */
+.hover\:bg-gray-300:hover { background-color: var(--color-border); } /* Hover for buttons */
+
+.text-gray-700 { color: var(--color-text-default); }
+.text-gray-800 { color: var(--color-text-default); }
+.text-gray-500 { color: var(--color-text-secondary); }
+.text-gray-600 { color: var(--color-text-secondary); }
+
+.border-gray-200 { border-color: var(--color-border); }
+.border-gray-300 { border-color: var(--color-input-border); }
+
+.text-red-500 { color: var(--color-red-error); }
+.hover\:text-red-700:hover { color: var(--color-red-error); }
+.text-red-600 { color: var(--color-red-error); }
+.text-green-600 { color: var(--color-green-success); }
+.text-blue-200 { color: var(--color-text-secondary); } /* For sender name in self message */
+.text-blue-300 { color: var(--color-text-secondary); } /* For timestamp in self message */
+.bg-green-500 { background-color: var(--color-green-status); }
+.bg-gray-400 { background-color: var(--color-gray-status); }
+.bg-green-50 { background-color: var(--color-green-success); }
+.bg-red-50 { background-color: var(--color-red-error); }
+.bg-blue-50 { background-color: var(--color-blue-info); }
+
+/* Custom scrollbar for chat messages */
+.chat-messages::-webkit-scrollbar {
+    width: 8px;
+}
+.chat-messages::-webkit-scrollbar-track {
+    background: var(--color-background);
+    border-radius: 10px;
+}
+.chat-messages::-webkit-scrollbar-thumb {
+    background: var(--color-text-secondary);
+    border-radius: 10px;
+}
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: var(--color-darkblue);
+}
+/* Custom modal styles */
+.modal-overlay {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+.modal-content {
+    background-color: var(--color-surface);
+    border-radius: 0.75rem; /* rounded-xl */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+    color: var(--color-text-default);
+}
+/* Hidden file input */
+.hidden-file-input {
+    display: none;
+}
+
+/* Custom class for surface background, now always white */
+.bg-custom-surface {
+    background-color: var(--color-surface);
+}
