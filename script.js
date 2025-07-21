@@ -380,12 +380,14 @@ function renderMessage(message, isCurrentUser) {
     messageElement.classList.add('flex', 'mb-2', isCurrentUser ? 'justify-end' : 'justify-start');
 
     const messageBubble = document.createElement('div');
-    messageBubble.classList.add(
-        'rounded-xl',
-        'p-3',
-        'max-w-[70%]',
-        isCurrentUser ? 'bg-custom-secondary-blue text-white' : 'bg-gray-200 text-gray-800'
-    );
+    // Corrected: Split classes into individual arguments for classList.add()
+    if (isCurrentUser) {
+        messageBubble.classList.add('bg-custom-secondary-blue', 'text-white');
+    } else {
+        messageBubble.classList.add('bg-gray-200', 'text-gray-800');
+    }
+    messageBubble.classList.add('rounded-xl', 'p-3', 'max-w-[70%]');
+
 
     const senderName = document.createElement('div');
     senderName.classList.add('text-xs', 'font-semibold', 'mb-1', isCurrentUser ? 'text-right' : 'text-left', isCurrentUser ? 'text-blue-200' : 'text-gray-600');
