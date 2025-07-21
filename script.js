@@ -373,33 +373,20 @@ function showRegister() {
 const renderedMessages = new Map();
 
 /**
- * Renders a message in the chat messages container.
- * Renderiza un mensaje en el contenedor de mensajes del chat.
+ * Creates a message DOM element.
+ * Crea un elemento DOM de mensaje.
  * @param {object} message - The message object. El objeto del mensaje.
+ * @param {string} senderName - The name of the sender. El nombre del remitente.
  * @param {boolean} isCurrentUser - True if the message is from the current user. Verdadero si el mensaje es del usuario actual.
  * @param {string} messageId - The Firestore document ID of the message.
+ * @returns {HTMLElement} The created message element. El elemento de mensaje creado.
  */
-function renderMessage(message, isCurrentUser, messageId) {
-    let messageElement = renderedMessages.get(messageId); // Get from map
-
-    if (messageElement) {
-        // Message already exists, only update dynamic parts like timestamp if needed.
-        const messageTime = messageElement.querySelector('.text-xs.mt-1');
-        if (messageTime) {
-            const date = message.timestamp ? new Date(message.timestamp.toDate()) : new Date();
-            messageTime.textContent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-        console.log(`[renderMessage] Updated existing message ID: ${messageId}`);
-        return; // Exit, no need to create/append
-    }
-
-    // If messageElement does not exist, create a new one
-    messageElement = document.createElement('div');
+function createMessageElement(message, senderName, isCurrentUser, messageId) {
+    const messageElement = document.createElement('div');
     messageElement.id = `message-${messageId}`; // Assign a unique ID
     messageElement.classList.add('flex', 'mb-2', isCurrentUser ? 'justify-end' : 'justify-start');
 
     const messageBubble = document.createElement('div');
-    // Corrected: Split classes into individual arguments for classList.add()
     if (isCurrentUser) {
         messageBubble.classList.add('bg-custom-secondary-blue', 'text-white');
     } else {
@@ -407,15 +394,14 @@ function renderMessage(message, isCurrentUser, messageId) {
     }
     messageBubble.classList.add('rounded-xl', 'p-3', 'max-w-[70%]');
 
+    const senderNameDiv = document.createElement('div');
+    senderNameDiv.classList.add('text-xs', 'font-semibold', 'mb-1', isCurrentUser ? 'text-right' : 'text-left', isCurrentUser ? 'text-blue-200' : 'text-gray-600');
+    senderNameDiv.textContent = senderName || 'Desconocido';
 
-    const senderName = document.createElement('div');
-    senderName.classList.add('text-xs', 'font-semibold', 'mb-1', isCurrentUser ? 'text-right' : 'text-left', isCurrentUser ? 'text-blue-200' : 'text-gray-600');
-    senderName.textContent = message.senderName || 'Desconocido'; // Display sender's name
-
-    const messageContentContainer = document.createElement('div'); // Container for text or media
+    const messageContentContainer = document.createElement('div');
     messageContentContainer.classList.add('text-sm');
 
-    if (message.content) { // Display text content if available
+    if (message.content) {
         const textNode = document.createElement('p');
         textNode.textContent = message.content;
         messageContentContainer.appendChild(textNode);
@@ -437,21 +423,19 @@ function renderMessage(message, isCurrentUser, messageId) {
         }
     }
 
-
     const messageTime = document.createElement('div');
     messageTime.classList.add('text-xs', 'mt-1', isCurrentUser ? 'text-right' : 'text-left', isCurrentUser ? 'text-blue-300' : 'text-gray-500');
     const date = message.timestamp ? new Date(message.timestamp.toDate()) : new Date();
     messageTime.textContent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    messageBubble.appendChild(senderName);
-    messageBubble.appendChild(messageContentContainer); // Append the new container
+    messageBubble.appendChild(senderNameDiv);
+    messageBubble.appendChild(messageContentContainer);
     messageBubble.appendChild(messageTime);
-    messageElement.appendChild(messageBubble); // Append the wrapper
-    chatMessagesContainer.appendChild(messageElement); // Append the wrapper element
-    renderedMessages.set(messageId, messageElement); // Store the rendered element
-    chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
-    console.log(`[renderMessage] Added new message ID: ${messageId}`);
+    messageElement.appendChild(messageBubble);
+
+    return messageElement;
 }
+
 
 /**
  * Clears messages and hides message input area.
@@ -554,27 +538,41 @@ async function displayChatView(chatInfo) {
             const senderName = senderNamesMap.get(messageData.senderId);
             const isCurrentUserMessage = messageData.senderId === currentUserId;
 
-            console.log(`[displayChatView - Messages] Doc change type: ${docChange.type}, Message ID: ${messageId}, Data:`, messageData);
+            console.log(`[displayChatView - Messages] Doc change type: ${docChange.type}, Message ID: ${messageId}, Old Index: ${docChange.oldIndex}, New Index: ${docChange.newIndex}, Data:`, messageData);
 
             if (docChange.type === 'added') {
-                // Render new message
-                renderMessage({ ...messageData, senderName }, isCurrentUserMessage, messageId);
+                const newMessageElement = createMessageElement(messageData, senderName, isCurrentUserMessage, messageId);
+                // Insert at the correct position based on newIndex
+                const nextSibling = chatMessagesContainer.children[docChange.newIndex];
+                chatMessagesContainer.insertBefore(newMessageElement, nextSibling);
+                renderedMessages.set(messageId, newMessageElement);
+                console.log(`[displayChatView - Messages] Added message ID: ${messageId} at index ${docChange.newIndex}`);
             } else if (docChange.type === 'modified') {
-                // Update existing message (e.g., timestamp resolves)
-                // The renderMessage function is now smart enough to update in place.
-                renderMessage({ ...messageData, senderName }, isCurrentUserMessage, messageId);
-            } else if (docChange.type === 'removed') {
-                // Remove message
+                // Remove the old element if it exists
                 const existingElement = renderedMessages.get(messageId);
                 if (existingElement) {
                     existingElement.remove();
                     renderedMessages.delete(messageId);
-                    console.log(`[displayChatView - Messages] Removed message ID: ${messageId}`);
+                    console.log(`[displayChatView - Messages] Removed old element for modified message ID: ${messageId} from index ${docChange.oldIndex}`);
+                }
+                // Create and insert the updated element at the new position
+                const updatedMessageElement = createMessageElement(messageData, senderName, isCurrentUserMessage, messageId);
+                const nextSibling = chatMessagesContainer.children[docChange.newIndex];
+                chatMessagesContainer.insertBefore(updatedMessageElement, nextSibling);
+                renderedMessages.set(messageId, updatedMessageElement);
+                console.log(`[displayChatView - Messages] Re-added modified message ID: ${messageId} at new index ${docChange.newIndex}`);
+            } else if (docChange.type === 'removed') {
+                const existingElement = renderedMessages.get(messageId);
+                if (existingElement) {
+                    existingElement.remove();
+                    renderedMessages.delete(messageId);
+                    console.log(`[displayChatView - Messages] Removed message ID: ${messageId} from index ${docChange.oldIndex}`);
                 }
             }
         });
 
-        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
+        // After processing all changes, ensure scroll to bottom
+        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
     }, (error) => {
         console.error("Error listening to messages:", error);
         addNotification('Error de Chat', 'Hubo un problema al cargar los mensajes. Intenta recargar la página.', 'error');
