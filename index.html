@@ -4,81 +4,139 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChatApp</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
     <style>
+        /* CSS Variables for Theming */
+        :root {
+            --color-primary: #4CAF50;
+            --color-primary-dark: #43A047;
+            --color-secondary-blue: #2196F3;
+            --color-secondary-blue-dark: #1976D2;
+            --color-darkblue: #3B3B6B;
+            --color-background: #f0f2f5;
+            --color-surface: #ffffff;
+            --color-text-default: #374151; /* gray-800 */
+            --color-text-secondary: #6B7280; /* gray-500 */
+            --color-border: #E5E7EB; /* gray-200 */
+            --color-input-border: #D1D5DB; /* gray-300 */
+            --color-message-bg-self: var(--color-secondary-blue);
+            --color-message-text-self: #ffffff;
+            --color-message-bg-other: #e5e7eb; /* gray-200 */
+            --color-message-text-other: #374151; /* gray-800 */
+            --color-green-status: #22C55E; /* green-500 */
+            --color-gray-status: #9CA3AF; /* gray-400 */
+            --color-red-error: #EF4444; /* red-600 */
+            --color-green-success: #22C55E; /* green-600 */
+            --color-blue-info: #3B82F6; /* blue-500 */
+        }
+
+        .dark-mode {
+            --color-primary: #66BB6A; /* Lighter green for dark mode */
+            --color-primary-dark: #81C784;
+            --color-secondary-blue: #64B5F6; /* Lighter blue for dark mode */
+            --color-secondary-blue-dark: #90CAF9;
+            --color-darkblue: #B0BEC5; /* Lighter text for dark mode */
+            --color-background: #000000; /* Pure black background */
+            --color-surface: #0a0a0a; /* Very dark surface for cards/panels */
+            --color-text-default: #E2E8F0; /* Light gray text */
+            --color-text-secondary: #A0AEC0; /* Lighter gray secondary text */
+            --color-border: #333333; /* Darker border */
+            --color-input-border: #444444; /* Darker input border */
+            --color-message-bg-self: var(--color-secondary-blue);
+            --color-message-text-self: #ffffff;
+            --color-message-bg-other: #333333; /* Darker gray for other messages */
+            --color-message-text-other: #E2E8F0; /* Light text for other messages */
+            --color-green-status: #4CAF50; /* Adjust for dark mode visibility */
+            --color-gray-status: #6B7280; /* Adjust for dark mode visibility */
+            --color-red-error: #F87171; /* Adjust for dark mode visibility */
+            --color-green-success: #4CAF50; /* Adjust for dark mode visibility */
+            --color-blue-info: #60A5FA; /* Adjust for dark mode visibility */
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5;
+            background-color: var(--color-background);
+            color: var(--color-text-default);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
-        .bg-custom-primary {
-            background-color: #6366F1; /* Example primary color: Indigo-500 */
+
+        /* Applying CSS variables to Tailwind-like classes */
+        .bg-custom-primary { background-color: var(--color-primary); }
+        .hover\:bg-custom-primary-dark:hover { background-color: var(--color-primary-dark); }
+        .focus\:ring-custom-primary { --tw-ring-color: var(--color-primary); }
+
+        .text-custom-darkblue { color: var(--color-darkblue); }
+        .bg-custom-secondary-blue { background-color: var(--color-secondary-blue); }
+        .hover\:bg-custom-secondary-blue-dark:hover { background-color: var(--color-secondary-blue-dark); }
+        .focus\:ring-custom-secondary-blue { --tw-ring-color: var(--color-secondary-blue); }
+
+        /* General element styling based on variables */
+        .bg-white { background-color: var(--color-surface); }
+        .bg-gray-100 { background-color: var(--color-background); } /* Main app background */
+        .bg-gray-50 { background-color: var(--color-background); } /* Chat area, lists background */
+        .bg-gray-200 { background-color: var(--color-message-bg-other); color: var(--color-message-text-other); } /* Other messages, general gray buttons */
+        .hover\:bg-gray-200:hover { background-color: var(--color-border); } /* Hover for lists */
+        .hover\:bg-gray-300:hover { background-color: var(--color-border); } /* Hover for buttons */
+
+        .text-gray-700 { color: var(--color-text-default); }
+        .text-gray-800 { color: var(--color-text-default); }
+        .text-gray-500 { color: var(--color-text-secondary); }
+        .text-gray-600 { color: var(--color-text-secondary); }
+
+        .border-gray-200 { border-color: var(--color-border); }
+        .border-gray-300 { border-color: var(--color-input-border); }
+
+        .text-red-500 { color: var(--color-red-error); }
+        .hover\:text-red-700:hover { color: var(--color-red-error); }
+        .text-red-600 { color: var(--color-red-error); }
+        .text-green-600 { color: var(--color-green-success); }
+        .text-blue-200 { color: var(--color-text-secondary); } /* For sender name in self message */
+        .text-blue-300 { color: var(--color-text-secondary); } /* For timestamp in self message */
+        .bg-green-500 { background-color: var(--color-green-status); }
+        .bg-gray-400 { background-color: var(--color-gray-status); }
+        .bg-green-50 { background-color: var(--color-green-success); }
+        .bg-red-50 { background-color: var(--color-red-error); }
+        .bg-blue-50 { background-color: var(--color-blue-info); }
+
+        /* Custom scrollbar for chat messages */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
         }
-        .hover\:bg-custom-primary-dark:hover {
-            background-color: #4F46E5; /* Darker Indigo-600 */
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--color-background);
+            border-radius: 10px;
         }
-        .text-custom-primary {
-            color: #6366F1;
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--color-text-secondary);
+            border-radius: 10px;
         }
-        .focus\:ring-custom-primary:focus {
-            --tw-ring-color: #6366F1;
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--color-darkblue);
         }
-        .bg-custom-secondary-blue {
-            background-color: #3B82F6; /* Example secondary color: Blue-500 */
-        }
-        .focus\:ring-custom-secondary-blue:focus {
-            --tw-ring-color: #3B82F6;
-        }
-        .border-custom-primary {
-            border-color: #6366F1;
-        }
-        .text-custom-secondary-gray {
-            color: #6B7280; /* Gray-500 */
-        }
-        .bg-blue-500-custom { /* Custom class for blue background */
-            background-color: #3B82F6;
-        }
-        .bg-green-500-custom { /* Custom class for green background */
-            background-color: #10B981; /* Example Green-500 */
-        }
-        .bg-red-500-custom { /* Custom class for red background */
-            background-color: #EF4444; /* Example Red-500 */
-        }
-        .shadow-custom {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        .shadow-custom-lg {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
+        /* Custom modal styles */
         .modal-overlay {
             background-color: rgba(0, 0, 0, 0.5);
         }
         .modal-content {
-            background-color: #fff;
+            background-color: var(--color-surface);
             border-radius: 0.75rem; /* rounded-xl */
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+            color: var(--color-text-default);
         }
-        /* Custom scrollbar for chat messages */
-        .chat-messages-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        .chat-messages-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        .chat-messages-container::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-        }
-        .chat-messages-container::-webkit-scrollbar-thumb:hover {
-            background: #555;
+        /* Hidden file input */
+        .hidden-file-input {
+            display: none;
         }
     </style>
 </head>
 <body class="h-screen flex items-center justify-center">
 
+    <!-- Login/Registration Section -->
     <div id="auth-section" class="bg-white p-8 rounded-xl shadow-xl w-full max-w-md">
         <div class="flex justify-center mb-6">
             <img src="https://i.imgur.com/CJHtqu5.jpeg" alt="SynergiCode Logo" class="w-48 h-auto">
@@ -87,147 +145,322 @@
         <form id="auth-form" class="space-y-4">
             <div>
                 <label for="email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
-                <input type="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-primary focus:border-custom-primary sm:text-sm" required>
+                <input type="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
             </div>
             <div>
                 <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
-                <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-primary focus:border-custom-primary sm:text-sm" required>
+                <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
             </div>
-            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-custom-primary hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
-                <span id="auth-button-text">Iniciar Sesión</span>
+            <!-- New fields for registration -->
+            <div id="register-fields" class="space-y-4 hidden">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Nombre de Usuario (opcional)</label>
+                    <input type="text" id="username" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm">
+                </div>
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-gray-700">Número de Teléfono</label>
+                    <input type="tel" id="phone" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" placeholder="+58XXXXXXXXX" pattern="^\+\d{1,3}\d{7,15}$" title="Formato: +CódigoDePaísNúmero (ej. +584123456789)">
+                </div>
+                <div>
+                    <label for="dob" class="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
+                    <input type="date" id="dob" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm">
+                </div>
+                <div>
+                    <label for="age" class="block text-sm font-medium text-gray-700">Edad</label>
+                    <input type="number" id="age" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" min="0" max="120">
+                </div>
+            </div>
+            <button type="submit" id="auth-button" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-custom-primary hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
+                Iniciar Sesión
             </button>
         </form>
-        <p class="mt-6 text-center text-sm">
-            ¿No tienes una cuenta? <button type="button" id="toggle-auth-mode" class="font-medium text-custom-primary hover:text-custom-primary-dark">Regístrate</button>
+        <p class="mt-4 text-center text-sm text-gray-600">
+            ¿No tienes una cuenta? <button id="toggle-auth" class="font-medium text-custom-secondary-blue hover:text-custom-secondary-blue-dark">Regístrate</button>
         </p>
         <p class="mt-2 text-center text-sm">
-            <button type="button" id="forgot-password" class="font-medium text-custom-secondary-gray hover:text-gray-900">¿Olvidaste tu contraseña?</button>
+            <button id="forgot-password-link" class="font-medium text-custom-secondary-blue hover:text-custom-secondary-blue-dark">¿Olvidaste tu contraseña?</button>
         </p>
-        <div id="auth-message" class="mt-4 text-center text-sm font-medium text-red-600 hidden"></div>
+        <div id="auth-message" class="mt-4 text-center text-sm text-red-600"></div>
     </div>
 
-    <div id="main-app" class="hidden h-screen w-full flex bg-gray-100 overflow-hidden">
-        <!-- Sidebar para dispositivos móviles -->
-        <div id="mobile-sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden"></div>
-        <aside id="sidebar" class="fixed inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out bg-white w-64 flex flex-col z-40 shadow-lg">
+    <!-- Main Chat Application Section -->
+    <div id="app-section" class="hidden h-screen w-full flex flex-col md:flex-row bg-gray-100 rounded-xl shadow-xl overflow-hidden">
+        <!-- Sidebar -->
+        <div id="sidebar" class="w-full max-w-xs md:w-1/4 bg-custom-surface border-r border-gray-200 flex-col md:flex fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40">
             <div class="p-4 border-b border-gray-200 flex items-center justify-between">
-                <div class="flex items-center">
-                    <img id="user-profile-pic-sidebar" src="https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF" alt="Foto de perfil" class="w-10 h-10 rounded-full mr-3 border border-gray-300">
-                    <div>
-                        <h3 id="user-display-name-sidebar" class="font-semibold text-gray-800">Cargando...</h3>
-                        <p id="user-email-sidebar" class="text-sm text-gray-500 break-words"></p>
-                    </div>
-                </div>
-                <button id="close-sidebar-button" class="lg:hidden text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times text-xl"></i>
+                <h1 class="text-2xl font-bold text-custom-darkblue dark:text-white">ChatApp</h1>
+                <button id="logout-button" class="text-red-500 hover:text-red-700 text-sm font-medium hidden md:block">
+                    <i class="fas fa-sign-out-alt mr-1"></i>Salir
+                </button>
+                <button id="close-sidebar-button" class="md:hidden text-gray-700 hover:text-gray-900 p-2 rounded-md">
+                    <i class="fas fa-xmark text-lg"></i>
                 </button>
             </div>
-            <nav class="flex-grow p-4 space-y-2">
-                <button id="show-contacts" class="w-full flex items-center p-2 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary text-left">
-                    <i class="fas fa-users mr-3"></i> Contactos
+            <div class="p-4 flex flex-col items-center border-b border-gray-200">
+                <div class="mb-4">
+                    <img src="https://i.imgur.com/CJHtqu5.jpeg" alt="SynergiCode Logo" class="w-24 h-auto">
+                </div>
+                <div class="relative">
+                    <img id="profile-pic" src="https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF" alt="Foto de Perfil" class="w-24 h-24 rounded-full object-cover border-2 border-custom-secondary-blue mb-2">
+                    <input type="file" id="profile-pic-upload" accept="image/*" class="hidden-file-input">
+                    <button id="upload-pic-button" class="absolute bottom-0 right-0 bg-custom-secondary-blue text-white rounded-full p-2 text-xs shadow-md hover:bg-custom-secondary-blue-dark transition-colors duration-200">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+                <p id="user-display-username" class="text-xl font-bold text-custom-darkblue"></p>
+                
+                <!-- Email Verification Status in Sidebar -->
+                <div id="email-verification-status-sidebar" class="text-xs text-gray-500 mt-1 text-center">
+                    <span id="email-verified-text"></span>
+                    <button id="resend-verification-email-sidebar" class="hidden mt-1 text-custom-secondary-blue hover:text-custom-secondary-blue-dark font-medium">
+                        Reenviar Email de Verificación
+                    </button>
+                </div>
+
+                <p id="user-phone-display" class="text-xs text-gray-500"></p>
+                <p id="user-dob-display" class="text-xs text-gray-500"></p>
+                <p id="user-age-display" class="text-xs text-gray-500"></p>
+                <button id="change-username-button" class="mt-4 w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                    <i class="fas fa-user-edit mr-2"></i>Cambiar Nombre de Usuario
                 </button>
-                <button id="show-groups" class="w-full flex items-center p-2 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary text-left">
-                    <i class="fas fa-layer-group mr-3"></i> Grupos
+                <button id="theme-toggle-button" class="mt-2 w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                    <i class="fas fa-sun mr-2"></i>Cambiar Tema
                 </button>
+            </div>
+            <div class="p-4 border-t border-gray-200 mt-auto">
+                <button id="add-contact-button" class="w-full bg-custom-primary text-white py-2 px-4 rounded-md hover:bg-custom-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
+                    <i class="fas fa-user-plus mr-2"></i>Añadir Contacto
+                </button>
+                <button id="create-group-button" class="w-full mt-2 bg-custom-primary text-white py-2 px-4 rounded-md hover:bg-custom-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
+                    <i class="fas fa-plus-circle mr-2"></i>Crear Grupo
+                </button>
+                <button id="mobile-logout-button" class="w-full mt-2 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 md:hidden">
+                    <i class="fas fa-sign-out-alt mr-1"></i>Salir
+                </button>
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-30"></div>
+
+        <div class="w-full md:w-3/4 flex flex-col">
+            <div class="md:hidden p-2 bg-custom-surface border-b border-gray-200 flex justify-between items-center">
+                <button id="mobile-sidebar-toggle" class="p-2 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <img src="https://i.imgur.com/CJHtqu5.jpeg" alt="SynergiCode Logo" class="w-12 h-auto">
+            </div>
+
+            <nav class="bg-custom-surface p-4 border-b border-gray-200 flex flex-wrap items-center justify-around">
+                <button id="show-contacts" class="flex-1 text-center p-3 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200 mx-1">
+                    <i class="fas fa-address-book mr-2"></i>Contactos
+                </button>
+                <button id="show-groups" class="flex-1 text-center p-3 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200 mx-1">
+                    <i class="fas fa-users mr-2"></i>Grupos de Trabajo
+                </button>
+                <button id="show-notifications-button" class="flex-1 text-center p-3 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200 relative mx-1">
+                    <i class="fas fa-bell mr-2"></i>Notificaciones
+                    <span id="notification-badge" class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                </button>
+                <button id="show-friend-requests-button" class="flex-1 text-center p-3 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200 relative mx-1">
+                    <i class="fas fa-user-friends mr-2"></i>Solicitudes
+                    </button>
             </nav>
-            <div class="p-4 border-t border-gray-200">
-                <button id="create-group-button" class="w-full flex items-center p-2 text-custom-primary rounded-md hover:bg-custom-primary-dark hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary text-left mb-2">
-                    <i class="fas fa-plus-circle mr-3"></i> Crear Grupo
-                </button>
-                <button id="change-username-button" class="w-full flex items-center p-2 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary text-left mb-2">
-                    <i class="fas fa-user-edit mr-3"></i> Cambiar Nombre de Usuario
-                </button>
-                <button id="sign-out-button" class="w-full flex items-center p-2 text-red-600 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 text-left">
-                    <i class="fas fa-sign-out-alt mr-3"></i> Cerrar Sesión
-                </button>
-            </div>
-        </aside>
 
-        <!-- Main Content Area -->
-        <main class="flex-1 flex flex-col lg:ml-64">
-            <header class="bg-white p-4 shadow-md flex items-center justify-between z-20">
+            <!-- Header for current chat -->
+            <div id="chat-header" class="bg-custom-surface p-4 border-b border-gray-200 flex items-center justify-between">
                 <div class="flex items-center">
-                    <button id="mobile-sidebar-toggle" class="lg:hidden mr-3 text-gray-600 hover:text-gray-800">
-                        <i class="fas fa-bars text-xl"></i>
+                    <img id="current-chat-pic" src="https://placehold.co/50x50/E2E8F0/4A5568?text=Chat" alt="Chat Pic" class="w-12 h-12 rounded-full object-cover mr-3">
+                    <div>
+                        <h2 id="current-chat-name" class="text-xl font-semibold text-gray-800">Selecciona un chat</h2>
+                        <p id="current-chat-status" class="text-sm text-gray-500"></p>
+                    </div>
+                </div>
+                <!-- Botones de gestión de grupo (añadidos aquí) -->
+                <div class="flex space-x-2 ml-auto">
+                    <button id="add-group-member-button" class="hidden px-3 py-1 bg-custom-primary text-white text-sm rounded-md hover:bg-custom-primary-dark transition-colors">
+                        Añadir Miembro
                     </button>
-                    <h2 id="current-chat-name" class="text-xl font-semibold text-gray-800">Selecciona un chat</h2>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <button id="chat-info-button" class="text-gray-500 hover:text-gray-700 hidden" title="Información del Chat">
-                        <i class="fas fa-info-circle text-xl"></i>
+                    <button id="leave-group-button" class="hidden px-3 py-1 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors">
+                        Salir del Grupo
                     </button>
-                    <div id="user-profile-menu" class="relative">
-                        <button id="user-profile-button" class="flex items-center space-x-2 focus:outline-none">
-                            <img id="user-profile-pic-header" src="https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF" alt="Foto de perfil" class="w-8 h-8 rounded-full border border-gray-300">
-                        </button>
-                        <div id="user-menu-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden">
-                            <button id="dropdown-change-username" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">Cambiar Nombre</button>
-                            <button id="dropdown-sign-out" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left">Cerrar Sesión</button>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <div class="flex-1 flex overflow-hidden">
-                <!-- Contact/Group List Section -->
-                <div id="contact-list-section" class="w-full lg:w-1/3 border-r border-gray-200 bg-white flex flex-col">
-                    <div class="p-4 border-b border-gray-200">
-                        <input type="text" id="search-input" placeholder="Buscar contactos o grupos..." class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-custom-primary focus:border-custom-primary">
-                    </div>
-                    <div id="contacts-and-groups-container" class="flex-1 overflow-y-auto">
-                        <!-- Contacts and Groups will be loaded here -->
-                        <div id="contact-list" class="space-y-2 p-4 hidden">
-                            <h3 class="text-lg font-semibold text-gray-700 mb-2">Contactos</h3>
-                            <!-- Contact items go here -->
-                        </div>
-                        <div id="group-list" class="space-y-2 p-4 hidden">
-                            <h3 class="text-lg font-semibold text-gray-700 mb-2">Grupos</h3>
-                            <!-- Group items go here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chat Area -->
-                <div id="chat-area" class="flex-1 flex flex-col bg-gray-50 hidden">
-                    <div id="chat-messages-container" class="flex-1 p-6 overflow-y-auto space-y-4">
-                        <!-- Messages will be loaded here -->
-                    </div>
-                    <div id="message-input-area" class="p-4 bg-white border-t border-gray-200 flex items-center">
-                        <input type="text" id="message-input" placeholder="Escribe un mensaje..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-custom-primary focus:border-custom-primary mr-3">
-                        <button id="send-message-button" class="bg-custom-primary text-white p-3 rounded-full hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
-        </main>
+
+            <div id="chat-messages-container" class="flex-grow p-4 overflow-y-auto chat-messages bg-gray-50">
+                <!-- Messages will be loaded here -->
+            </div>
+
+            <div id="message-input-area" class="bg-custom-surface p-4 border-t border-gray-200 flex items-center hidden">
+                <input type="file" id="chat-media-upload" accept="image/*,video/*" class="hidden-file-input">
+                <button id="attach-media-button" class="mr-3 bg-gray-200 text-gray-700 p-3 rounded-full hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <input type="text" id="message-input" class="flex-grow px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue" placeholder="Escribe un mensaje...">
+                <button id="send-message-button" class="ml-3 bg-custom-primary text-white p-3 rounded-full hover:bg-custom-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+
+            <div id="no-chat-selected" class="flex-grow flex items-center justify-center text-gray-500 text-lg">
+                <p>Selecciona un contacto o grupo para empezar a chatear.</p>
+            </div>
+
+            <div id="contacts-list-view" class="flex-grow p-4 overflow-y-auto bg-gray-50 w-full">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">Mis Contactos</h3>
+                <ul id="contacts-list" class="space-y-2">
+                    <!-- Contacts will be loaded here -->
+                </ul>
+                <p id="no-contacts-message" class="text-center text-gray-500 mt-4 hidden">No tienes contactos. Añade uno para empezar a chatear.</p>
+            </div>
+
+            <div id="groups-list-view" class="flex-grow p-4 overflow-y-auto bg-gray-50 w-full hidden">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">Mis Grupos de Trabajo</h3>
+                <ul id="groups-list" class="space-y-2">
+                    <!-- Groups will be loaded here -->
+                </ul>
+                <p id="no-groups-message" class="text-center text-gray-500 mt-4 hidden">No tienes grupos. Crea uno para empezar a colaborar.</p>
+            </div>
+        </div>
     </div>
 
-    <!-- Notification Container -->
-    <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-3">
-        <!-- Notifications will be appended here -->
+    <!-- Modals -->
+
+    <!-- Add Contact Modal -->
+    <div id="add-contact-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
+        <div class="modal-content p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Añadir Contacto</h3>
+            <form id="add-contact-form" class="space-y-4">
+                <div>
+                    <label for="contact-input" class="block text-sm font-medium text-gray-700">Correo Electrónico o Nombre de Usuario</label>
+                    <input type="text" id="contact-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-add-contact" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">Enviar Solicitud</button>
+                </div>
+                <p id="add-contact-message" class="text-sm text-red-600"></p>
+            </form>
+        </div>
     </div>
 
     <!-- Create Group Modal -->
     <div id="create-group-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
         <div class="modal-content p-6 w-full max-w-md">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Crear Nuevo Grupo</h3>
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Crear Nuevo Grupo de Trabajo</h3>
             <form id="create-group-form" class="space-y-4">
                 <div>
-                    <label for="group-name-input" class="block text-sm font-medium text-gray-700">Nombre del Grupo</label>
-                    <input type="text" id="group-name-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
+                    <label for="group-name" class="block text-sm font-medium text-gray-700">Nombre del Grupo</label>
+                    <input type="text" id="group-name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
                 </div>
                 <div>
-                    <label for="group-members-input" class="block text-sm font-medium text-gray-700">Miembros (Correos Electrónicos separados por comas)</label>
-                    <input type="text" id="group-members-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" placeholder="ej. usuario1@example.com, usuario2@example.com">
-                    <p class="mt-1 text-xs text-gray-500">Asegúrate de que los usuarios existan en tu aplicación.</p>
+                    <label for="group-description" class="block text-sm font-medium text-gray-700">Descripción (Opcional)</label>
+                    <textarea id="group-description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm"></textarea>
                 </div>
-                <div id="create-group-message" class="text-red-600 text-sm hidden"></div>
+                <div>
+                    <label for="group-photo-upload" class="block text-sm font-medium text-gray-700">Foto del Grupo (Opcional)</label>
+                    <div class="mt-1 flex items-center space-x-4">
+                        <img id="group-photo-preview" src="https://placehold.co/80x80/E2E8F0/4A5568?text=Grupo" alt="Group Photo Preview" class="w-20 h-20 rounded-full object-cover border-2 border-gray-300">
+                        <input type="file" id="group-photo-upload" accept="image/*" class="hidden-file-input">
+                        <button type="button" id="upload-group-pic-button" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                            <i class="fas fa-upload mr-2"></i>Subir Foto
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Miembros (selecciona contactos)</label>
+                    <div id="group-member-selection" class="mt-1 border border-gray-300 rounded-md p-2 max-h-40 overflow-y-auto space-y-1">
+                        <p id="no-contacts-for-group" class="text-sm text-gray-500 hidden">Añade contactos para poder agregarlos a un grupo.</p>
+                    </div>
+                </div>
                 <div class="flex justify-end space-x-3">
                     <button type="button" id="cancel-create-group" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-custom-secondary-blue text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Crear Grupo</button>
+                    <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">Crear Grupo</button>
+                </div>
+                <p id="create-group-message" class="text-sm text-red-600"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Añadir Miembro al Grupo -->
+    <div id="add-group-member-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h3 class="text-lg font-semibold mb-4">Añadir Miembro al Grupo</h3>
+            <form id="add-group-member-form">
+                <div class="mb-4">
+                    <label for="add-group-member-input" class="block text-sm font-medium text-gray-700 mb-1">Email o Nombre de Usuario</label>
+                    <input type="text" id="add-group-member-input" class="w-full p-2 border border-gray-300 rounded-md focus:ring-custom-primary focus:border-custom-primary">
+                </div>
+                <p id="add-group-member-message" class="text-red-500 text-sm mb-4"></p>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-add-group-member" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark transition-colors">Añadir</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h3 id="confirm-modal-title" class="text-lg font-semibold mb-4">Confirmación</h3>
+            <p id="confirm-modal-content" class="text-gray-700 mb-6"></p>
+            <div class="flex justify-end space-x-3">
+                <button id="confirm-modal-cancel" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">Cancelar</button>
+                <button id="confirm-modal-ok" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Box for Alerts (kept for critical system messages) -->
+    <div id="message-box" class="hidden fixed inset-0 flex items-center justify-center z-[999] modal-overlay">
+        <div class="modal-content p-6 w-full max-w-sm text-center">
+            <h3 id="message-box-title" class="text-xl font-bold text-gray-800 mb-4"></h3>
+            <p id="message-box-content" class="text-gray-700 mb-6"></p>
+            <button id="message-box-ok" class="px-6 py-2 bg-custom-secondary-blue text-white rounded-md hover:bg-custom-secondary-blue-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">OK</button>
+        </div>
+    </div>
+
+    <!-- Email Sent Modal (kept for registration flow) -->
+    <div id="email-sent-modal" class="hidden fixed inset-0 flex items-center justify-center z-[999] modal-overlay">
+        <div class="modal-content p-8 w-full max-w-sm text-center">
+            <div class="text-custom-primary text-6xl mb-4">
+                <i class="fas fa-envelope-circle-check"></i> </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-3">¡Email Enviado!</h3>
+            <p class="text-gray-700 mb-6">Por favor, revisa tu bandeja de entrada y haz clic en el enlace de verificación para activar tu cuenta.</p>
+            <button id="email-sent-ok" class="px-6 py-2 bg-custom-secondary-blue text-white rounded-md hover:bg-custom-secondary-blue-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Entendido</button>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgot-password-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
+        <div class="modal-content p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Recuperar Contraseña</h3>
+            <form id="forgot-password-form" class="space-y-4">
+                <div>
+                    <label for="forgot-email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+                    <input type="email" id="forgot-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-forgot-password" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">Enviar Enlace</button>
+                </div>
+                <p id="forgot-password-message" class="text-sm text-red-600"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div id="notifications-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
+        <div class="modal-content p-6 w-full max-w-lg">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Notificaciones</h3>
+            <ul id="notifications-list" class="space-y-3 max-h-80 overflow-y-auto mb-4">
+                <!-- Notifications will be loaded here -->
+            </ul>
+            <p id="no-notifications-message" class="text-center text-gray-500 hidden">No tienes notificaciones nuevas.</p>
+            <div class="flex justify-end space-x-3">
+                <button type="button" id="clear-notifications-button" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Borrar Todas</button>
+                <button type="button" id="close-notifications-modal" class="px-4 py-2 bg-custom-secondary-blue text-white rounded-md hover:bg-custom-secondary-blue-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cerrar</button>
+            </div>
         </div>
     </div>
 
@@ -240,26 +473,12 @@
                     <label for="new-username-input" class="block text-sm font-medium text-gray-700">Nuevo Nombre de Usuario</label>
                     <input type="text" id="new-username-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
                 </div>
-                <div id="change-username-message" class="text-red-600 text-sm hidden"></div>
                 <div class="flex justify-end space-x-3">
                     <button type="button" id="cancel-change-username" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cancelar</button>
                     <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">Guardar</button>
                 </div>
+                <p id="change-username-message" class="text-sm text-red-600"></p>
             </form>
-        </div>
-    </div>
-
-    <!-- Chat Info Modal -->
-    <div id="chat-info-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
-        <div class="modal-content p-6 w-full max-w-md">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Información del Chat</h3>
-            <div id="chat-info-details">
-                <!-- Chat details will be displayed here -->
-            </div>
-            <div class="flex justify-end space-x-3 mt-4">
-                <button type="button" id="close-chat-info-modal" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cerrar</button>
-                <button type="button" id="leave-group-button" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 hidden">Abandonar Grupo</button>
-            </div>
         </div>
     </div>
 
@@ -291,7 +510,6 @@
             getDocs,
             serverTimestamp,
             orderBy,
-            limit,
             deleteDoc
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -303,7 +521,7 @@
         let currentUserEmail = null;
         let userDisplayName = null;
         let userProfilePicUrl = "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF"; // Default profile picture
-        let activeChat = null; // Stores { id: 'chatId', type: 'user' | 'group', name: 'Chat Name', members: [] }
+        let activeChat = null;
         let contacts = [];
         let groups = [];
         let unsubscribeMessages = null;
@@ -311,8 +529,17 @@
         let unsubscribeGroups = null;
         let notifications = [];
         let notificationIdCounter = 0;
+        let resendCooldownTimer = null; // Variable to hold the cooldown timer
+        const RESEND_COOLDOWN_SECONDS = 60; // Cooldown duration in seconds
 
-        // Firebase Configuration (ensure this matches your Firebase project settings)
+        // Cloudinary Configuration
+        // !!! IMPORTANT: Replace with your actual Cloudinary Cloud Name and Upload Preset !!!
+        const CLOUDINARY_CLOUD_NAME = 'dae8gaaek'; // Replace with your Cloudinary Cloud Name
+        const CLOUDINARY_UPLOAD_PRESET = 'SynergiCode'; // Replace with your Cloudinary Upload Preset
+
+        // Get app ID and Firebase config from global variables provided by the environment
+        // Ensure __app_id and __firebase_config are available in the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'synergicode';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyASX4A-fd3tvzWByAkqgdXMB9DbV4r_OLI",
             authDomain: "synergicode.firebaseapp.com",
@@ -323,455 +550,795 @@
             measurementId: "G-Y0CDV2S6XB"
         };
 
-        // Initialize Firebase
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-        } catch (error) {
-            console.error("Error initializing Firebase:", error);
-            addNotification('Error de Inicialización', 'No se pudo inicializar Firebase. Revisa tu consola para más detalles.', 'error');
-        }
-
         // --- DOM Elements ---
+        // Es crucial que estos IDs existan en tu archivo HTML.
         const authSection = document.getElementById('auth-section');
-        const mainApp = document.getElementById('main-app');
-        const authForm = document.getElementById('auth-form');
+        const appSection = document.getElementById('app-section');
         const authTitle = document.getElementById('auth-title');
-        const authButtonText = document.getElementById('auth-button-text');
-        const toggleAuthModeButton = document.getElementById('toggle-auth-mode');
-        const forgotPasswordButton = document.getElementById('forgot-password');
-        const authMessage = document.getElementById('auth-message');
+        const authForm = document.getElementById('auth-form');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
+        const authButton = document.getElementById('auth-button');
+        const toggleAuthButton = document.getElementById('toggle-auth');
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+        const authMessage = document.getElementById('auth-message');
 
-        const userDisplayNameSidebar = document.getElementById('user-display-name-sidebar');
-        const userEmailSidebar = document.getElementById('user-email-sidebar');
-        const userProfilePicSidebar = document.getElementById('user-profile-pic-sidebar');
-        const userProfilePicHeader = document.getElementById('user-profile-pic-header');
+        const logoutButton = document.getElementById('logout-button');
+        const profilePic = document.getElementById('profile-pic');
+        const profilePicUploadInput = document.getElementById('profile-pic-upload');
+        const uploadPicButton = document.getElementById('upload-pic-button');
+        const userDisplayNameElement = document.getElementById('user-display-username');
 
-        const signOutButton = document.getElementById('sign-out-button');
-        const currentChatName = document.getElementById('current-chat-name');
-        const chatMessagesContainer = document.getElementById('chat-messages-container');
-        const messageInput = document.getElementById('message-input');
-        const sendMessageButton = document.getElementById('send-message-button');
-        const contactListSection = document.getElementById('contact-list-section');
-        const chatArea = document.getElementById('chat-area');
-        const contactList = document.getElementById('contact-list');
-        const groupList = document.getElementById('group-list');
+        const emailVerificationStatusSidebar = document.getElementById('email-verification-status-sidebar');
+        const emailVerifiedText = document.getElementById('email-verified-text');
+        const resendVerificationEmailSidebarButton = document.getElementById('resend-verification-email-sidebar');
+
+        const userPhoneDisplay = document.getElementById('user-phone-display');
+        const userDobDisplay = document.getElementById('user-dob-display');
+        const userAgeDisplay = document.getElementById('user-age-display');
+        const changeUsernameButton = document.getElementById('change-username-button');
+        const themeToggleButton = document.getElementById('theme-toggle-button'); // Nuevo elemento DOM para el botón de tema
+
         const showContactsButton = document.getElementById('show-contacts');
         const showGroupsButton = document.getElementById('show-groups');
+        const addContactButton = document.getElementById('add-contact-button');
         const createGroupButton = document.getElementById('create-group-button');
+        const chatHeader = document.getElementById('chat-header');
+        const currentChatPic = document.getElementById('current-chat-pic');
+        const currentChatName = document.getElementById('current-chat-name');
+        const currentChatStatus = document.getElementById('current-chat-status');
+        const chatMessagesContainer = document.getElementById('chat-messages-container');
+        const messageInputArea = document.getElementById('message-input-area');
+        const attachMediaButton = document.getElementById('attach-media-button');
+        const chatMediaUploadInput = document.getElementById('chat-media-upload');
+        const messageInput = document.getElementById('message-input');
+        const sendMessageButton = document.getElementById('send-message-button');
+        const noChatSelected = document.getElementById('no-chat-selected');
+        const contactsListView = document.getElementById('contacts-list-view');
+        const contactsList = document.getElementById('contacts-list');
+        const noContactsMessage = document.getElementById('no-contacts-message');
+        const groupsListView = document.getElementById('groups-list-view');
+        const groupsList = document.getElementById('groups-list');
+        const noGroupsMessage = document.getElementById('no-groups-message');
+
+        const registerFields = document.getElementById('register-fields');
+        const usernameInput = document.getElementById('username');
+        const phoneInput = document.getElementById('phone');
+        const dobInput = document.getElementById('dob');
+        const ageInput = document.getElementById('age');
+
+        const addContactModal = document.getElementById('add-contact-modal');
+        const addContactForm = document.getElementById('add-contact-form');
+        const contactInput = document.getElementById('contact-input');
+        const cancelAddContactButton = document.getElementById('cancel-add-contact');
+        const addContactMessage = document.getElementById('add-contact-message');
+
         const createGroupModal = document.getElementById('create-group-modal');
-        const cancelCreateGroupButton = document.getElementById('cancel-create-group');
         const createGroupForm = document.getElementById('create-group-form');
-        const groupNameInput = document.getElementById('group-name-input');
-        const groupMembersInput = document.getElementById('group-members-input');
+        const groupNameInput = document.getElementById('group-name');
+        const groupDescriptionInput = document.getElementById('group-description');
+        const groupPhotoPreview = document.getElementById('group-photo-preview'); // New DOM element
+        const groupPhotoUploadInput = document.getElementById('group-photo-upload'); // New DOM element
+        const uploadGroupPicButton = document.getElementById('upload-group-pic-button'); // New DOM element
+        const groupMemberSelection = document.getElementById('group-member-selection');
+        const noContactsForGroup = document.getElementById('no-contacts-for-group');
+        const cancelCreateGroupButton = document.getElementById('cancel-create-group');
         const createGroupMessage = document.getElementById('create-group-message');
 
-        const changeUsernameButton = document.getElementById('change-username-button');
+        const messageBox = document.getElementById('message-box');
+        const messageBoxTitle = document.getElementById('message-box-title');
+        const messageBoxContent = document.getElementById('message-box-content');
+        const messageBoxOkButton = document.getElementById('message-box-ok');
+
+        const emailSentModal = document.getElementById('email-sent-modal');
+        const emailSentOkButton = document.getElementById('email-sent-ok');
+
+        const forgotPasswordModal = document.getElementById('forgot-password-modal');
+        const forgotPasswordForm = document.getElementById('forgot-password-form');
+        const forgotEmailInput = document.getElementById('forgot-email');
+        const cancelForgotPasswordButton = document.getElementById('cancel-forgot-password');
+        const forgotPasswordMessage = document.getElementById('forgot-password-message');
+
+        const showNotificationsButton = document.getElementById('show-notifications-button');
+        const notificationBadge = document.getElementById('notification-badge');
+        const notificationsModal = document.getElementById('notifications-modal');
+        const notificationsList = document.getElementById('notifications-list');
+        const noNotificationsMessage = document.getElementById('no-notifications-message');
+        const clearNotificationsButton = document.getElementById('clear-notifications-button');
+        const closeNotificationsModalButton = document.getElementById('close-notifications-modal');
+        const showFriendRequestsButton = document.getElementById('show-friend-requests-button'); // New DOM element
+
         const changeUsernameModal = document.getElementById('change-username-modal');
-        const cancelChangeUsernameButton = document.getElementById('cancel-change-username');
         const changeUsernameForm = document.getElementById('change-username-form');
         const newUsernameInput = document.getElementById('new-username-input');
+        const cancelChangeUsernameButton = document.getElementById('cancel-change-username');
         const changeUsernameMessage = document.getElementById('change-username-message');
 
         const mobileSidebarToggle = document.getElementById('mobile-sidebar-toggle');
         const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('mobile-sidebar-overlay');
+        const mobileLogoutButton = document.getElementById('mobile-logout-button');
         const closeSidebarButton = document.getElementById('close-sidebar-button');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
 
-        const userProfileButton = document.getElementById('user-profile-button');
-        const userMenuDropdown = document.getElementById('user-menu-dropdown');
-        const dropdownChangeUsername = document.getElementById('dropdown-change-username');
-        const dropdownSignOut = document.getElementById('dropdown-sign-out');
+        // New DOM Elements for Group Management
+        const addGroupMemberButton = document.getElementById('add-group-member-button'); // Button in chat header
+        const leaveGroupButton = document.getElementById('leave-group-button'); // Button in chat header
+        const addGroupMemberModal = document.getElementById('add-group-member-modal');
+        const addGroupMemberForm = document.getElementById('add-group-member-form');
+        const addGroupMemberInput = document.getElementById('add-group-member-input');
+        const cancelAddGroupMemberButton = document.getElementById('cancel-add-group-member');
+        const addGroupMemberMessage = document.getElementById('add-group-member-message');
 
-        const searchInput = document.getElementById('search-input');
-        const contactsAndGroupsContainer = document.getElementById('contacts-and-groups-container');
+        // Custom Confirmation Modal DOM Elements
+        const confirmModal = document.getElementById('confirm-modal');
+        const confirmModalTitle = document.getElementById('confirm-modal-title');
+        const confirmModalContent = document.getElementById('confirm-modal-content');
+        const confirmModalOkButton = document.getElementById('confirm-modal-ok');
+        const confirmModalCancelButton = document.getElementById('confirm-modal-cancel');
 
-        const chatInfoButton = document.getElementById('chat-info-button');
-        const chatInfoModal = document.getElementById('chat-info-modal');
-        const closeChatInfoModalButton = document.getElementById('close-chat-info-modal');
-        const chatInfoDetails = document.getElementById('chat-info-details');
-        const leaveGroupButton = document.getElementById('leave-group-button');
 
-        // --- Auth Mode Toggle (Login/Register) ---
-        let isLoginMode = true;
+        // --- Utility Functions ---
 
-        toggleAuthModeButton.addEventListener('click', () => {
-            isLoginMode = !isLoginMode;
-            authTitle.textContent = isLoginMode ? 'Iniciar Sesión' : 'Registrarse';
-            authButtonText.textContent = isLoginMode ? 'Iniciar Sesión' : 'Registrarse';
-            toggleAuthModeButton.textContent = isLoginMode ? 'Regístrate' : 'Iniciar Sesión';
-            authMessage.classList.add('hidden'); // Clear previous messages
-        });
-
-        // --- Auth Form Submission (Login/Register) ---
-        authForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = emailInput.value;
-            const password = passwordInput.value;
-            authMessage.classList.add('hidden'); // Hide any previous error messages
-
-            if (!email || !password) {
-                displayAuthMessage('Por favor, ingresa tu correo y contraseña.', 'error');
-                return;
-            }
-
-            try {
-                if (isLoginMode) {
-                    // Login
-                    await signInWithEmailAndPassword(auth, email, password);
-                } else {
-                    // Register
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    const user = userCredential.user;
-
-                    // Set initial username based on email prefix
-                    const defaultUsername = email.split('@')[0];
-                    await updateProfile(user, {
-                        displayName: defaultUsername
-                    });
-
-                    // Create user document in Firestore
-                    await setDoc(doc(db, 'users', user.uid), {
-                        email: user.email,
-                        username: defaultUsername,
-                        createdAt: serverTimestamp()
-                    });
-
-                    addNotification('Registro Exitoso', 'Tu cuenta ha sido creada. ¡Bienvenido!', 'success');
-                }
-            } catch (error) {
-                console.error("Authentication Error:", error);
-                handleAuthError(error);
-            }
-        });
-
-        // --- Forgot Password ---
-        forgotPasswordButton.addEventListener('click', async () => {
-            const email = emailInput.value;
-            if (!email) {
-                displayAuthMessage('Por favor, ingresa tu correo electrónico para restablecer la contraseña.', 'error');
-                return;
-            }
-            try {
-                await sendPasswordResetEmail(auth, email);
-                displayAuthMessage('Se ha enviado un correo electrónico para restablecer tu contraseña. Revisa tu bandeja de entrada.', 'success');
-            } catch (error) {
-                console.error("Password Reset Error:", error);
-                handleAuthError(error);
-            }
-        });
-
-        // --- Authentication State Change Listener ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUserId = user.uid;
-                currentUserEmail = user.email;
-
-                // Fetch user's custom username from Firestore
-                const userDocRef = doc(db, 'users', user.uid);
-                const userDocSnap = await getDoc(userDocRef); 
-
-                if (userDocSnap.exists()) {
-                    userDisplayName = userDocSnap.data().username || user.displayName || user.email;
-                    userProfilePicUrl = userDocSnap.data().profilePicUrl || userProfilePicUrl; // Use custom if available
-                } else {
-                    // If no user document, create one with default username
-                    userDisplayName = user.displayName || user.email.split('@')[0];
-                    await setDoc(userDocRef, {
-                        email: user.email,
-                        username: userDisplayName,
-                        createdAt: serverTimestamp()
-                    });
-                }
-
-                // Update UI elements
-                userDisplayNameSidebar.textContent = userDisplayName;
-                userEmailSidebar.textContent = currentUserEmail;
-                userProfilePicSidebar.src = userProfilePicUrl;
-                userProfilePicHeader.src = userProfilePicUrl;
-
-                authSection.classList.add('hidden');
-                mainApp.classList.remove('hidden');
-                addNotification('Sesión Iniciada', `Bienvenido, ${userDisplayName}`, 'success');
-
-                // Load initial data
-                loadContacts();
-                loadGroups();
-                showContactsList(); // Default view: contacts
-
-            } else {
-                currentUserId = null;
-                currentUserEmail = null;
-                userDisplayName = null;
-                userProfilePicUrl = "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF";
-
-                authSection.classList.remove('hidden');
-                mainApp.classList.add('hidden');
-                contactList.innerHTML = ''; // Clear lists
-                groupList.innerHTML = '';
-                chatMessagesContainer.innerHTML = ''; // Clear chat
-                activeChat = null;
-                currentChatName.textContent = 'Selecciona un chat';
-                chatArea.classList.add('hidden');
-                contactListSection.classList.remove('hidden'); // Ensure contact list is visible
-                chatInfoButton.classList.add('hidden');
-                
-                // Unsubscribe from all listeners
-                if (unsubscribeMessages) unsubscribeMessages();
-                if (unsubscribeContacts) unsubscribeContacts();
-                if (unsubscribeGroups) unsubscribeGroups();
-                
-                addNotification('Sesión Cerrada', 'Has cerrado sesión correctamente.', 'info');
-            }
-        });
-
-        // --- Logout ---
-        signOutButton.addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-            } catch (error) {
-                console.error("Error signing out:", error);
-                addNotification('Error al Cerrar Sesión', 'No se pudo cerrar sesión. Inténtalo de nuevo.', 'error');
-            }
-        });
-
-        dropdownSignOut.addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-            } catch (error) {
-                console.error("Error signing out:", error);
-                addNotification('Error al Cerrar Sesión', 'No se pudo cerrar sesión. Inténtalo de nuevo.', 'error');
-            }
-        });
-
-        // --- Notification System ---
-        function addNotification(title, message, type = 'info', duration = 5000) {
-            const notificationId = notificationIdCounter++;
-            const notification = { id: notificationId, title, message, type };
-            notifications.push(notification);
-            renderNotifications();
-
-            setTimeout(() => {
-                removeNotification(notificationId);
-            }, duration);
-        }
-
-        function removeNotification(id) {
-            notifications = notifications.filter(n => n.id !== id);
-            renderNotifications();
-        }
-
-        function renderNotifications() {
-            const container = document.getElementById('notification-container');
-            container.innerHTML = ''; // Clear existing notifications
-
-            notifications.forEach(notif => {
-                const div = document.createElement('div');
-                div.className = `relative p-4 rounded-md shadow-lg text-white max-w-xs transition-all duration-300 transform translate-x-0 opacity-100`;
-                
-                let bgColorClass = '';
-                let iconClass = '';
-                if (notif.type === 'success') {
-                    bgColorClass = 'bg-green-500-custom';
-                    iconClass = 'fas fa-check-circle';
-                } else if (notif.type === 'error') {
-                    bgColorClass = 'bg-red-500-custom';
-                    iconClass = 'fas fa-exclamation-circle';
-                } else {
-                    bgColorClass = 'bg-blue-500-custom';
-                    iconClass = 'fas fa-info-circle';
-                }
-
-                div.classList.add(bgColorClass);
-
-                div.innerHTML = `
-                    <div class="flex items-center">
-                        <i class="${iconClass} mr-2 text-xl"></i>
-                        <div class="flex-1">
-                            <h4 class="font-bold">${notif.title}</h4>
-                            <p class="text-sm">${notif.message}</p>
-                        </div>
-                        <button class="absolute top-1 right-1 text-white opacity-75 hover:opacity-100" onclick="removeNotificationFromDOM(${notif.id})">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                `;
-                container.appendChild(div);
+        /**
+         * Adds a new notification to the notifications array and updates the badge.
+         * Añade una nueva notificación al array de notificaciones y actualiza el contador.
+         * @param {string} title - The title of the notification. El título de la notificación.
+         * @param {string} message - The content of the notification. El contenido de la notificación.
+         * @param {'success'|'error'|'info'|'friendRequest'} type - The type of notification. El tipo de notificación.
+         * @param {object} [data=null] - Optional data for the notification (e.g., requestId, senderId for friend requests). Datos opcionales para la notificación.
+         */
+        function addNotification(title, message, type = 'info', data = null) {
+            notifications.push({
+                id: notificationIdCounter++,
+                title,
+                message,
+                type,
+                read: false,
+                timestamp: new Date(),
+                data // Store additional data like requestId, senderId
             });
+            updateNotificationBadge();
         }
 
-        // Global function for onclick in notification close button
-        window.removeNotificationFromDOM = (id) => {
-            removeNotification(id);
-        };
-
-        // Helper for Auth messages
-        function displayAuthMessage(message, type) {
-            authMessage.textContent = message;
-            authMessage.className = `mt-4 text-center text-sm font-medium ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
-            authMessage.classList.remove('hidden');
-        }
-
-        // Helper to handle authentication errors
-        function handleAuthError(error) {
-            let message = 'Ocurrió un error inesperado. Inténtalo de nuevo.';
-            switch (error.code) {
-                case 'auth/invalid-email':
-                    message = 'El formato del correo electrónico es inválido.';
-                    break;
-                case 'auth/user-disabled':
-                    message = 'Este usuario ha sido deshabilitado.';
-                    break;
-                case 'auth/user-not-found':
-                    message = 'No se encontró un usuario con este correo electrónico.';
-                    break;
-                case 'auth/wrong-password':
-                    message = 'Contraseña incorrecta.';
-                    break;
-                case 'auth/email-already-in-use':
-                    message = 'El correo electrónico ya está registrado.';
-                    break;
-                case 'auth/weak-password':
-                    message = 'La contraseña debe tener al menos 6 caracteres.';
-                    break;
-                case 'auth/operation-not-allowed':
-                    message = 'La autenticación por correo y contraseña no está habilitada.';
-                    break;
-                case 'auth/missing-email':
-                    message = 'Por favor, ingresa un correo electrónico.';
-                    break;
-                case 'auth/missing-password':
-                    message = 'Por favor, ingresa una contraseña.';
-                    break;
-                default:
-                    message = error.message;
-                    break;
+        /**
+         * Updates the notification badge count.
+         * Actualiza el contador de notificaciones.
+         */
+        function updateNotificationBadge() {
+            const unreadCount = notifications.filter(n => !n.read).length;
+            if (notificationBadge) {
+                if (unreadCount > 0) {
+                    notificationBadge.textContent = unreadCount;
+                    notificationBadge.classList.remove('hidden');
+                } else {
+                    notificationBadge.classList.add('hidden');
+                }
             }
-            displayAuthMessage(message, 'error');
-            addNotification('Error de Autenticación', message, 'error');
         }
 
-        // --- Chat Logic ---
-        async function loadMessages(chatId, chatType) {
-            if (unsubscribeMessages) {
-                unsubscribeMessages(); // Detach previous listener
+        /**
+         * Displays the notifications modal and renders the notifications.
+         * Muestra el modal de notificaciones y renderiza las notificaciones.
+         * @param {string} [filterType=null] - Optional filter to show only specific types of notifications (e.g., 'friendRequest').
+         */
+        function showNotificationsModal(filterType = null) {
+            if (!notificationsList || !notificationsModal || !noNotificationsMessage) return;
+
+            notificationsList.innerHTML = '';
+            
+            let notificationsToDisplay = notifications;
+            if (filterType) {
+                notificationsToDisplay = notifications.filter(n => n.type === filterType);
+                notificationsModal.dataset.filter = filterType; // Store the active filter
+            } else {
+                delete notificationsModal.dataset.filter; // Clear filter if showing all
             }
 
-            chatMessagesContainer.innerHTML = '<div class="text-center text-gray-500">Cargando mensajes...</div>';
+            if (notificationsToDisplay.length === 0) {
+                noNotificationsMessage.classList.remove('hidden');
+                // Customize message based on filter
+                if (filterType === 'friendRequest') {
+                    noNotificationsMessage.textContent = 'No tienes solicitudes de amistad pendientes.';
+                } else {
+                    noNotificationsMessage.textContent = 'No tienes notificaciones.';
+                }
+            } else {
+                noNotificationsMessage.classList.add('hidden');
+                notificationsToDisplay.forEach(n => {
+                    const li = document.createElement('li');
+                    li.classList.add('p-3', 'rounded-md', 'shadow-sm');
+                    
+                    let bgColor = 'bg-gray-50';
+                    let textColor = 'text-gray-800';
+                    let icon = '';
+                    let actionButtonsHtml = '';
 
-            const messagesCollectionRef = collection(db, 'chats', chatId, 'messages');
-            const messagesQuery = query(messagesCollectionRef, orderBy('timestamp', 'asc'), limit(50)); // Limit to last 50 messages
-
-            unsubscribeMessages = onSnapshot(messagesQuery, async (snapshot) => {
-                chatMessagesContainer.innerHTML = ''; // Clear existing messages
-                const fragment = document.createDocumentFragment();
-
-                for (const doc of snapshot.docs) {
-                    const messageData = doc.data();
-                    const senderId = messageData.senderId;
-                    let senderDisplayName = "Desconocido";
-
-                    if (senderId === currentUserId) {
-                        senderDisplayName = userDisplayName;
-                    } else {
-                        // Fetch sender's username
-                        const senderDocRef = doc(db, 'users', senderId);
-                        const senderDocSnap = await getDoc(senderDocRef);
-                        if (senderDocSnap.exists()) {
-                            senderDisplayName = senderDocSnap.data().username || senderDocSnap.data().email.split('@')[0];
-                        } else {
-                            // If user not found, try to use email from message (if available)
-                            senderDisplayName = messageData.senderEmail || "Desconocido";
-                        }
+                    switch (n.type) {
+                        case 'success':
+                            bgColor = 'bg-green-50';
+                            textColor = 'text-green-800';
+                            icon = '<i class="fas fa-check-circle mr-2"></i>';
+                            break;
+                        case 'error':
+                            bgColor = 'bg-red-50';
+                            textColor = 'text-red-800';
+                            icon = '<i class="fas fa-times-circle mr-2"></i>';
+                            break;
+                        case 'info':
+                            bgColor = 'bg-blue-50';
+                            textColor = 'text-blue-800';
+                            icon = '<i class="fas fa-info-circle mr-2"></i>';
+                            break;
+                        case 'friendRequest':
+                            bgColor = 'bg-blue-50'; // Distinct color for requests
+                            textColor = 'text-blue-800';
+                            icon = '<i class="fas fa-user-plus mr-2"></i>';
+                            if (n.data && n.data.requestId && n.data.senderId) {
+                                actionButtonsHtml = `
+                                    <div class="mt-3 flex justify-end space-x-2">
+                                        <button class="accept-friend-request px-3 py-1 bg-custom-primary text-white text-sm rounded-md hover:bg-custom-primary-dark" 
+                                                data-request-id="${n.data.requestId}" data-sender-id="${n.data.senderId}">Aceptar</button>
+                                        <button class="deny-friend-request px-3 py-1 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-100" 
+                                                data-request-id="${n.data.requestId}">Denegar</button>
+                                    </div>
+                                `;
+                            }
+                            break;
+                        default:
+                            bgColor = 'bg-gray-50';
+                            textColor = 'text-gray-800';
+                            icon = '<i class="fas fa-info-circle mr-2"></i>';
+                            break;
                     }
 
-                    const messageElement = createMessageElement(messageData, senderDisplayName, senderId === currentUserId);
-                    fragment.appendChild(messageElement);
-                }
-                chatMessagesContainer.appendChild(fragment);
-                chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
-            }, (error) => {
-                console.error("Error loading messages:", error);
-                addNotification('Error al Cargar Mensajes', 'No se pudieron cargar los mensajes.', 'error');
-                chatMessagesContainer.innerHTML = '<div class="text-center text-red-500">Error al cargar mensajes.</div>';
+                    li.classList.add(bgColor, textColor);
+                    li.innerHTML = `
+                        <div class="font-semibold flex items-center mb-1">${icon}${n.title}</div>
+                        <div class="text-sm">${n.message}</div>
+                        <div class="text-xs text-right text-gray-500 mt-1">${n.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        ${actionButtonsHtml}
+                    `;
+                    notificationsList.appendChild(li);
+                    n.read = true; // Mark as read when displayed
+                });
+            }
+            updateNotificationBadge(); // Update badge after marking as read
+            notificationsModal.classList.remove('hidden');
+
+            // Add event listeners for new buttons
+            notificationsList.querySelectorAll('.accept-friend-request').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const requestId = e.target.dataset.requestId;
+                    const senderId = e.target.dataset.senderId;
+                    await acceptFriendRequest(requestId, senderId);
+                    if (notificationsModal) notificationsModal.classList.add('hidden'); // Close modal after action
+                });
+            });
+
+            notificationsList.querySelectorAll('.deny-friend-request').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const requestId = e.target.dataset.requestId;
+                    await denyFriendRequest(requestId);
+                    if (notificationsModal) notificationsModal.classList.add('hidden'); // Close modal after action
+                });
             });
         }
 
-        function createMessageElement(message, senderDisplayName, isCurrentUser) {
-            const div = document.createElement('div');
-            div.className = `flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`;
-
-            const contentDiv = document.createElement('div');
-            contentDiv.className = `max-w-xs lg:max-w-md px-4 py-2 rounded-lg shadow ${
-                isCurrentUser ? 'bg-custom-primary text-white' : 'bg-white text-gray-800'
-            }`;
-
-            if (!isCurrentUser) {
-                const senderNameSpan = document.createElement('div');
-                senderNameSpan.className = 'font-semibold text-sm mb-1';
-                senderNameSpan.textContent = senderDisplayName;
-                contentDiv.appendChild(senderNameSpan);
-            }
-
-            const messageText = document.createElement('p');
-            messageText.className = 'text-sm';
-            messageText.textContent = message.text;
-            contentDiv.appendChild(messageText);
-
-            const timestamp = message.timestamp ? new Date(message.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Ahora';
-            const timestampSpan = document.createElement('span');
-            timestampSpan.className = `block text-xs mt-1 ${isCurrentUser ? 'text-indigo-200' : 'text-gray-400'} text-right`;
-            timestampSpan.textContent = timestamp;
-            contentDiv.appendChild(timestampSpan);
-
-            div.appendChild(contentDiv);
-            return div;
+        /**
+         * Clears all notifications.
+         * Borra todas las notificaciones.
+         */
+        function clearAllNotifications() {
+            notifications = [];
+            showNotificationsModal(notificationsModal.dataset.filter || null); // Re-render to show empty state, maintaining filter
         }
 
-        sendMessageButton.addEventListener('click', async () => {
-            const messageText = messageInput.value.trim();
-            if (messageText === '' || !activeChat) {
+        /**
+         * Displays a custom message box instead of alert().
+         * Muestra una caja de mensaje personalizada en lugar de alert().
+         * @param {string} title - The title of the message box. El título de la caja de mensaje.
+         * @param {string} content - The content of the message. El contenido del mensaje.
+         */
+        function showMessageBox(title, content) {
+            if (!messageBox || !messageBoxTitle || !messageBoxContent) return;
+            messageBoxTitle.textContent = title;
+            messageBoxContent.textContent = content;
+            messageBox.classList.remove('hidden');
+        }
+
+        /**
+         * Hides the custom message box.
+         * Oculta la caja de mensaje personalizada.
+         */
+        function hideMessageBox() {
+            if (messageBox) messageBox.classList.add('hidden');
+        }
+
+        /**
+         * Displays the custom email sent modal.
+         * Muestra el modal personalizado de email enviado.
+         */
+        function showEmailSentModal() {
+            if (emailSentModal) emailSentModal.classList.remove('hidden');
+        }
+
+        /**
+         * Hides the custom email sent modal.
+         * Oculta el modal personalizado de email enviado.
+         */
+        function hideEmailSentModal() {
+            if (emailSentModal) emailSentModal.classList.add('hidden');
+        }
+
+        /**
+         * Displays a custom confirmation modal.
+         * Muestra un modal de confirmación personalizado.
+         * @param {string} title - El título de la confirmación.
+         * @param {string} content - El mensaje de contenido.
+         * @returns {Promise<boolean>} Una promesa que se resuelve en true si se confirma, false en caso contrario.
+         */
+        function showConfirmModal(title, content) {
+            return new Promise(resolve => {
+                if (!confirmModal || !confirmModalTitle || !confirmModalContent || !confirmModalOkButton || !confirmModalCancelButton) {
+                    console.error("Confirmation modal elements not found.");
+                    return resolve(false); // Resolve false if elements are missing
+                }
+                confirmModalTitle.textContent = title;
+                confirmModalContent.textContent = content;
+                confirmModal.classList.remove('hidden');
+
+                const handleConfirm = () => {
+                    confirmModal.classList.add('hidden');
+                    confirmModalOkButton.removeEventListener('click', handleConfirm);
+                    confirmModalCancelButton.removeEventListener('click', handleCancel);
+                    resolve(true);
+                };
+
+                const handleCancel = () => {
+                    confirmModal.classList.add('hidden');
+                    confirmModalOkButton.removeEventListener('click', handleConfirm);
+                    confirmModalCancelButton.removeEventListener('click', handleCancel);
+                    resolve(false);
+                };
+
+                confirmModalOkButton.addEventListener('click', handleConfirm);
+                confirmModalCancelButton.addEventListener('click', handleCancel);
+            });
+        }
+
+        /**
+         * Displays the login form.
+         * Muestra el formulario de inicio de sesión.
+         */
+        function showLogin() {
+            if (!authTitle || !authButton || !toggleAuthButton || !authForm || !authMessage || !registerFields) return;
+            authTitle.textContent = 'Iniciar Sesión';
+            authButton.textContent = 'Iniciar Sesión';
+            toggleAuthButton.textContent = 'Regístrate';
+            authForm.dataset.mode = 'login';
+            authMessage.textContent = '';
+            registerFields.classList.add('hidden'); // Hide additional fields for login
+        }
+
+        /**
+         * Displays the registration form.
+         * Muestra el formulario de registro.
+         */
+        function showRegister() {
+            if (!authTitle || !authButton || !toggleAuthButton || !authForm || !authMessage || !registerFields) return;
+            authTitle.textContent = 'Registrarse';
+            authButton.textContent = 'Registrarse';
+            toggleAuthButton.textContent = 'Iniciar Sesión';
+            authForm.dataset.mode = 'register';
+            authMessage.textContent = '';
+            registerFields.classList.remove('hidden'); // Show additional fields for registration
+        }
+
+        // Global map to keep track of rendered message elements by their Firestore document ID
+        const renderedMessages = new Map();
+
+        /**
+         * Creates a message DOM element.
+         * Crea un elemento DOM de mensaje.
+         * @param {object} message - The message object. El objeto del mensaje.
+         * @param {string} senderName - The name of the sender. El nombre del remitente.
+         * @param {boolean} isCurrentUser - True if the message is from the current user. Verdadero si el mensaje es del usuario actual.
+         * @param {string} messageId - The Firestore document ID of the message.
+         * @returns {HTMLElement} The created message element. El elemento de mensaje creado.
+         */
+        function createMessageElement(message, senderName, isCurrentUser, messageId) {
+            const messageElement = document.createElement('div');
+            messageElement.id = `message-${messageId}`; // Assign a unique ID
+            messageElement.classList.add('flex', 'mb-2', isCurrentUser ? 'justify-end' : 'justify-start');
+
+            const messageBubble = document.createElement('div');
+            if (isCurrentUser) {
+                messageBubble.classList.add('bg-custom-secondary-blue', 'text-white');
+            } else {
+                messageBubble.classList.add('bg-gray-200', 'text-gray-800');
+            }
+            messageBubble.classList.add('rounded-xl', 'p-3', 'max-w-[70%]');
+
+            const senderNameDiv = document.createElement('div');
+            senderNameDiv.classList.add('text-xs', 'font-semibold', 'mb-1', isCurrentUser ? 'text-right' : 'text-left', isCurrentUser ? 'text-blue-200' : 'text-gray-600');
+            senderNameDiv.textContent = senderName || 'Desconocido';
+
+            const messageContentContainer = document.createElement('div');
+            messageContentContainer.classList.add('text-sm');
+
+            if (message.content) {
+                const textNode = document.createElement('p');
+                textNode.textContent = message.content;
+                messageContentContainer.appendChild(textNode);
+            }
+            
+            if (message.mediaUrl && message.mediaType) {
+                if (message.mediaType.startsWith('image')) {
+                    const img = document.createElement('img');
+                    img.src = message.mediaUrl;
+                    img.alt = "Imagen enviada";
+                    img.classList.add('max-w-full', 'rounded-md', 'mb-1');
+                    messageContentContainer.appendChild(img);
+                } else if (message.mediaType.startsWith('video')) {
+                    const video = document.createElement('video');
+                    video.src = message.mediaUrl;
+                    video.controls = true;
+                    video.classList.add('max-w-full', 'rounded-md', 'mb-1');
+                    messageContentContainer.appendChild(video);
+                }
+            }
+
+            const messageTime = document.createElement('div');
+            messageTime.classList.add('text-xs', 'mt-1', isCurrentUser ? 'text-right' : 'text-left', isCurrentUser ? 'text-blue-300' : 'text-gray-500');
+            const date = message.timestamp ? new Date(message.timestamp.toDate()) : new Date();
+            messageTime.textContent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            messageBubble.appendChild(senderNameDiv);
+            messageBubble.appendChild(messageContentContainer);
+            messageBubble.appendChild(messageTime);
+            messageElement.appendChild(messageBubble);
+
+            return messageElement;
+        }
+
+
+        /**
+         * Clears messages and hides message input area.
+         * Limpia los mensajes y oculta el área de entrada de mensajes.
+         */
+        function clearChatView() {
+            if (chatMessagesContainer) chatMessagesContainer.innerHTML = '';
+            renderedMessages.clear(); // Clear the map when clearing the view
+            if (messageInputArea) messageInputArea.classList.add('hidden');
+            if (noChatSelected) noChatSelected.classList.remove('hidden');
+            if (chatHeader) chatHeader.classList.add('hidden');
+            // Hide group action buttons when no chat or non-group chat is selected
+            if (addGroupMemberButton) addGroupMemberButton.classList.add('hidden');
+            if (leaveGroupButton) leaveGroupButton.classList.add('hidden');
+
+            if (unsubscribeMessages) {
+                unsubscribeMessages(); // Unsubscribe from previous chat messages
+            }
+            activeChat = null;
+        }
+
+        /**
+         * Displays the chat view for a given contact or group.
+         * Muestra la vista de chat para un contacto o grupo dado.
+         * @param {object} chatInfo - Object containing chat details (id, type, name, pic, status, adminId, members). Objeto que contiene los detalles del chat (id, tipo, nombre, imagen, estado, adminId, members).
+         */
+        async function displayChatView(chatInfo) {
+            // Hide lists and show chat area
+            if (contactsListView) contactsListView.classList.add('hidden');
+            if (groupsListView) groupsListView.classList.add('hidden');
+            if (noChatSelected) noChatSelected.classList.add('hidden');
+            if (messageInputArea) messageInputArea.classList.remove('hidden');
+            if (chatHeader) chatHeader.classList.remove('hidden');
+
+            // Update chat header
+            if (currentChatName) currentChatName.textContent = chatInfo.name;
+            if (currentChatPic) currentChatPic.src = chatInfo.pic;
+            if (currentChatStatus) currentChatStatus.textContent = chatInfo.status || '';
+
+            // Show/hide group action buttons
+            if (chatInfo.type === 'group') {
+                if (leaveGroupButton) leaveGroupButton.classList.remove('hidden');
+                if (chatInfo.adminId === currentUserId) {
+                    if (addGroupMemberButton) addGroupMemberButton.classList.remove('hidden');
+                } else {
+                    if (addGroupMemberButton) addGroupMemberButton.classList.add('hidden');
+                }
+            } else {
+                if (addGroupMemberButton) addGroupMemberButton.classList.add('hidden');
+                if (leaveGroupButton) leaveGroupButton.classList.add('hidden');
+            }
+
+
+            // Only clear the chat container and renderedMessages map if a new chat is selected
+            if (!activeChat || activeChat.id !== chatInfo.id || activeChat.type !== chatInfo.type) {
+                if (chatMessagesContainer) chatMessagesContainer.innerHTML = ''; // Clear previous messages
+                renderedMessages.clear(); // Clear the map for the new chat
+                console.log(`[displayChatView] New chat selected. Cleared chatMessagesContainer and renderedMessages map.`);
+            }
+            activeChat = chatInfo;
+
+            // Unsubscribe from previous messages listener if active
+            if (unsubscribeMessages) {
+                unsubscribeMessages();
+                console.log(`[displayChatView] Unsubscribed from previous messages listener.`);
+            }
+
+            let chatDocRef;
+            let membersToSet = [];
+
+            if (chatInfo.type === 'user') {
+                // For direct messages, create a consistent chat ID
+                const chatUsers = [currentUserId, chatInfo.id].sort();
+                const dmChatId = chatUsers.join('_');
+                chatDocRef = doc(db, `chats`, dmChatId); // Corrected path
+                membersToSet = chatUsers;
+                console.log(`[displayChatView - DM] Chat Document Ref Path: ${chatDocRef.path}`);
+            } else if (chatInfo.type === 'group') {
+                chatDocRef = doc(db, `chats`, chatInfo.id); // Corrected path
+                membersToSet = chatInfo.members; // Use members passed from group object
+                console.log(`[displayChatView - Group] Chat Document Ref Path: ${chatDocRef.path}`); // Debug log
+            }
+
+            // Ensure the chat document exists and has the correct members array for security rules
+            try {
+                await setDoc(chatDocRef, {
+                    type: chatInfo.type,
+                    members: membersToSet,
+                    lastActivity: serverTimestamp() // Optional: track last activity
+                }, { merge: true }); // Use merge to avoid overwriting existing chat data (like last message info)
+                console.log(`Ensured chat document ${chatInfo.id} exists with members:`, membersToSet);
+            } catch (error) {
+                console.error("Error ensuring chat document exists:", error);
+                addNotification('Error de Chat', 'No se pudo inicializar el chat. Inténtalo de nuevo.', 'error');
+                return; // Prevent loading messages if chat doc setup failed
+            }
+
+
+            // Listen for messages in this chat
+            const messagesCollectionRef = collection(chatDocRef, 'messages');
+            const q = query(messagesCollectionRef, orderBy('timestamp')); // Order by timestamp
+            console.log(`[displayChatView - Chat] Messages Collection Ref Path: ${messagesCollectionRef.path}`); // Debug log
+
+            unsubscribeMessages = onSnapshot(q, async (snapshot) => {
+                console.log(`[displayChatView - Messages] onSnapshot triggered for chat: ${chatInfo.id}, type: ${chatInfo.type}`);
+                if (snapshot.empty) {
+                    console.log("[displayChatView - Messages] No messages found in this chat (snapshot is empty).");
+                }
+
+                // Efficiently fetch sender names only if needed
+                const senderIds = new Set();
+                snapshot.docs.forEach(doc => senderIds.add(doc.data().senderId));
+                const senderNamesMap = new Map();
+                for (const senderId of senderIds) {
+                    if (!senderNamesMap.has(senderId)) { // Avoid re-fetching if already in map
+                        const senderDocRef = doc(db, `users`, senderId); // Corrected path
+                        try {
+                            const senderDocSnap = await getDoc(senderDocRef);
+                            senderNamesMap.set(senderId, senderDocSnap.exists() ? (senderDocSnap.data().username || senderDocSnap.data().email) : 'Desconocido');
+                        } catch (fetchError) {
+                            console.error(`[displayChatView - Messages] Error fetching sender document for ${senderId}:`, fetchError);
+                            senderNamesMap.set(senderId, 'Desconocido');
+                        }
+                    }
+                }
+                console.log("[displayChatView - Messages] Sender Names Map:", Object.fromEntries(senderNamesMap));
+
+
+                snapshot.docChanges().forEach(docChange => {
+                    const messageData = docChange.doc.data();
+                    const messageId = docChange.doc.id;
+                    const senderName = senderNamesMap.get(messageData.senderId);
+                    const isCurrentUserMessage = messageData.senderId === currentUserId;
+
+                    console.log(`[displayChatView - Messages] Doc change type: ${docChange.type}, Message ID: ${messageId}, Old Index: ${docChange.oldIndex}, New Index: ${docChange.newIndex}, Data:`, messageData);
+
+                    if (docChange.type === 'added') {
+                        const newMessageElement = createMessageElement(messageData, senderName, isCurrentUserMessage, messageId);
+                        // Insert at the correct position based on newIndex
+                        if (chatMessagesContainer) {
+                            const nextSibling = chatMessagesContainer.children[docChange.newIndex];
+                            chatMessagesContainer.insertBefore(newMessageElement, nextSibling);
+                        }
+                        renderedMessages.set(messageId, newMessageElement);
+                        console.log(`[displayChatView - Messages] Added message ID: ${messageId} at index ${docChange.newIndex}`);
+                    } else if (docChange.type === 'modified') {
+                        // Remove the old element if it exists
+                        const existingElement = renderedMessages.get(messageId);
+                        if (existingElement) {
+                            existingElement.remove();
+                            renderedMessages.delete(messageId);
+                            console.log(`[displayChatView - Messages] Removed old element for modified message ID: ${messageId} from index ${docChange.oldIndex}`);
+                        }
+                        // Create and insert the updated element at the new position
+                        const updatedMessageElement = createMessageElement(messageData, senderName, isCurrentUserMessage, messageId);
+                        if (chatMessagesContainer) {
+                            const nextSibling = chatMessagesContainer.children[docChange.newIndex];
+                            chatMessagesContainer.insertBefore(updatedMessageElement, nextSibling);
+                        }
+                        renderedMessages.set(messageId, updatedMessageElement);
+                        console.log(`[displayChatView - Messages] Re-added modified message ID: ${messageId} at new index ${docChange.newIndex}`);
+                    } else if (docChange.type === 'removed') {
+                        const existingElement = renderedMessages.get(messageId);
+                        if (existingElement) {
+                            existingElement.remove();
+                            renderedMessages.delete(messageId);
+                            console.log(`[displayChatView - Messages] Removed message ID: ${messageId} from index ${docChange.oldIndex}`);
+                        }
+                    }
+                });
+
+                // After processing all changes, ensure scroll to bottom
+                if (chatMessagesContainer) chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+            }, (error) => {
+                console.error("Error listening to messages:", error);
+                addNotification('Error de Chat', 'Hubo un problema al cargar los mensajes. Intenta recargar la página.', 'error');
+            });
+
+            // Close sidebar on mobile when a chat is selected
+            if (window.innerWidth < 768) { // Assuming 768px is the 'md' breakpoint
+                if (sidebar) sidebar.classList.add('-translate-x-full');
+                if (sidebarOverlay) sidebarOverlay.classList.add('hidden'); // Hide overlay when chat is selected
+            }
+        }
+
+        /**
+         * Uploads a file to Cloudinary.
+         * Sube un archivo a Cloudinary.
+         * @param {File} file - The file to upload. El archivo a subir.
+         * @returns {Promise<string>} - A promise that resolves with the secure URL of the uploaded file. Una promesa que se resuelve con la URL segura del archivo subido.
+         */
+        async function uploadFileToCloudinary(file) {
+            if (CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUDINARY_CLOUD_NAME' || CLOUDINARY_UPLOAD_PRESET === 'YOUR_CLOUDINARY_UPLOAD_PRESET') {
+                throw new Error('Configuración de Cloudinary incompleta. Por favor, revisa CLOUDINARY_CLOUD_NAME y CLOUDINARY_UPLOAD_PRESET.');
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            if (data.secure_url) {
+                return data.secure_url;
+            } else {
+                throw new Error(data.error ? data.error.message : 'Error desconocido al subir el archivo a Cloudinary.');
+            }
+        }
+
+        /**
+         * Renders the list of contacts.
+         * Renderiza la lista de contactos.
+         */
+        function renderContacts() {
+            if (!contactsList) return; // Ensure contactsList exists
+            contactsList.innerHTML = '';
+            if (contacts.length === 0) {
+                if (noContactsMessage) noContactsMessage.classList.remove('hidden');
+                return;
+            }
+            if (noContactsMessage) noContactsMessage.classList.add('hidden');
+
+            contacts.forEach(contact => {
+                const contactElement = document.createElement('li');
+                contactElement.classList.add('flex', 'items-center', 'p-3', 'rounded-md', 'hover:bg-gray-200', 'cursor-pointer', 'transition-colors', 'duration-200');
+                contactElement.addEventListener('click', () => {
+                    displayChatView({
+                        id: contact.id, // Use contact.id (UID) for direct messages
+                        type: 'user',
+                        name: contact.username || contact.email, // Use username for display
+                        pic: contact.profilePicUrl || "https://placehold.co/50x50/E2E8F0/4A5568?text=User",
+                        status: contact.lastOnline && (Date.now() - contact.lastOnline.toDate().getTime() < 300000) ? 'En línea' : 'Desconectado' // Online if active in last 5 mins
+                    });
+                });
+
+                const statusIndicator = document.createElement('div');
+                statusIndicator.classList.add('w-3', 'h-3', 'rounded-full', 'mr-2',
+                    contact.lastOnline && (Date.now() - contact.lastOnline.toDate().getTime() < 300000) ? 'bg-green-500' : 'bg-gray-400'
+                ); // Green for online, gray for offline
+
+                const contactPic = document.createElement('img');
+                contactPic.src = contact.profilePicUrl || "https://placehold.co/50x50/E2E8F0/4A5568?text=User";
+                contactPic.alt = "Contact Pic";
+                contactPic.classList.add('w-10', 'h-10', 'rounded-full', 'object-cover', 'mr-3');
+
+                const contactInfo = document.createElement('div');
+                contactInfo.classList.add('flex-grow');
+
+                const contactName = document.createElement('p');
+                contactName.classList.add('font-medium', 'text-gray-800');
+                contactName.textContent = contact.username || contact.email; // Use username for display
+
+                const contactStatus = document.createElement('p');
+                contactStatus.classList.add('text-sm', 'text-gray-500');
+                contactStatus.textContent = contact.lastOnline && (Date.now() - contact.lastOnline.toDate().getTime() < 300000) ? 'En línea' : 'Desconectado';
+
+                contactInfo.appendChild(contactName);
+                contactInfo.appendChild(contactStatus);
+                contactElement.appendChild(statusIndicator);
+                contactElement.appendChild(contactPic);
+                contactElement.appendChild(contactInfo);
+                contactsList.appendChild(contactElement);
+            });
+        }
+
+        /**
+         * Renders the list of groups.
+         * Renderiza la lista de grupos.
+         */
+        function renderGroups() {
+            if (!groupsList) return; // Ensure groupsList exists
+            groupsList.innerHTML = '';
+            if (groups.length === 0) {
+                if (noGroupsMessage) noGroupsMessage.classList.remove('hidden');
+                return;
+            }
+            if (noGroupsMessage) noGroupsMessage.classList.add('hidden');
+
+            groups.forEach(group => {
+                const groupElement = document.createElement('li');
+                groupElement.classList.add('flex', 'items-center', 'p-3', 'rounded-md', 'hover:bg-gray-200', 'cursor-pointer', 'transition-colors', 'duration-200');
+                groupElement.addEventListener('click', () => {
+                    displayChatView({
+                        id: group.id, // Use group.id for group chats
+                        type: 'group',
+                        name: group.name,
+                        pic: group.photoUrl || "https://placehold.co/50x50/E2E8F0/4A5568?text=Group", // Use group.photoUrl
+                        status: `${group.members.length} miembros`,
+                        adminId: group.adminId, // Pass adminId to chatInfo
+                        members: group.members // Pass members list to activeChat
+                    });
+                });
+
+                const groupPic = document.createElement('img');
+                groupPic.src = group.photoUrl || "https://placehold.co/50x50/E2E8F0/4A5568?text=Group"; // Use group.photoUrl
+                groupPic.alt = "Group Pic";
+                groupPic.classList.add('w-10', 'h-10', 'rounded-full', 'object-cover', 'mr-3');
+
+                const groupInfo = document.createElement('div');
+                groupInfo.classList.add('flex-grow');
+
+                const groupName = document.createElement('p');
+                groupName.classList.add('font-medium', 'text-gray-800');
+                groupName.textContent = group.name;
+
+                const groupMembersCount = document.createElement('p');
+                groupMembersCount.classList.add('text-sm', 'text-gray-500');
+                groupMembersCount.textContent = `${group.members.length} miembros`;
+
+                groupInfo.appendChild(groupName);
+                groupInfo.appendChild(groupMembersCount);
+                groupElement.appendChild(groupPic);
+                groupElement.appendChild(groupInfo);
+                groupsList.appendChild(groupElement);
+            });
+        }
+
+        /**
+         * Listens for changes in the current user's contacts and updates the UI.
+         * Escucha cambios en los contactos del usuario actual y actualiza la interfaz de usuario.
+         */
+        function listenForContacts() {
+            if (unsubscribeContacts) unsubscribeContacts(); // Unsubscribe from previous listener
+            if (!currentUserId || !db) {
+                console.warn("[listenForContacts] currentUserId or db is null. Skipping contact listener setup.");
                 return;
             }
 
-            try {
-                const messageData = {
-                    senderId: currentUserId,
-                    senderEmail: currentUserEmail,
-                    text: messageText,
-                    timestamp: serverTimestamp()
-                };
-
-                // Ensure activeChat.id is used as the chat document ID
-                await addDoc(collection(db, 'chats', activeChat.id, 'messages'), messageData);
-                messageInput.value = ''; // Clear input
-                chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
-            } catch (error) {
-                console.error("Error sending message:", error);
-                addNotification('Error al Enviar Mensaje', 'No se pudo enviar el mensaje.', 'error');
-            }
-        });
-
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessageButton.click();
-            }
-        });
-
-        // --- Contact/Group List Management ---
-        async function loadContacts() {
-            if (unsubscribeContacts) {
-                unsubscribeContacts();
-            }
-
-            const usersCollectionRef = collection(db, 'users');
+            const usersCollectionRef = collection(db, `users`); // Corrected path
             // Fetch all users except the current one
             const usersQuery = query(usersCollectionRef, where('email', '!=', currentUserEmail));
 
-            unsubscribeContacts = onSnapshot(usersQuery, (snapshot) => {
+
+            unsubscribeContacts = onSnapshot(usersQuery, async (snapshot) => {
                 contacts = [];
                 snapshot.forEach(doc => {
                     const userData = doc.data();
@@ -784,420 +1351,1141 @@
                         profilePicUrl: userData.profilePicUrl || "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF"
                     });
                 });
-                renderContactsAndGroups();
+                renderContacts(); // Re-render contacts list
             }, (error) => {
-                console.error("Error loading contacts:", error);
-                addNotification('Error al Cargar Contactos', 'No se pudieron cargar los contactos.', 'error');
+                console.error("Error listening to user contacts:", error);
+                addNotification('Error de Contactos', 'Hubo un problema al cargar tus contactos. Intenta recargar la página.', 'error');
             });
         }
 
-        async function loadGroups() {
-            if (unsubscribeGroups) {
-                unsubscribeGroups();
-            }
-
-            const groupsCollectionRef = collection(db, 'groups');
-            // Fetch groups where the current user is a member
-            const groupsQuery = query(groupsCollectionRef, where('members', 'array-contains', currentUserId));
-
-            unsubscribeGroups = onSnapshot(groupsQuery, (snapshot) => {
-                groups = [];
-                snapshot.forEach(doc => {
-                    groups.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
-                });
-                renderContactsAndGroups();
-            }, (error) => {
-                console.error("Error loading groups:", error);
-                addNotification('Error al Cargar Grupos', 'No se pudieron cargar los grupos.', 'error');
-            });
-        }
-
-        function renderContactsAndGroups() {
-            contactList.innerHTML = '<h3 class="text-lg font-semibold text-gray-700 mb-2">Contactos</h3>';
-            groupList.innerHTML = '<h3 class="text-lg font-semibold text-gray-700 mb-2">Grupos</h3>';
-
-            const searchTerm = searchInput.value.toLowerCase();
-
-            contacts.forEach(contact => {
-                if (contact.username.toLowerCase().includes(searchTerm) || contact.email.toLowerCase().includes(searchTerm)) {
-                    const div = document.createElement('div');
-                    div.className = `flex items-center p-3 rounded-lg hover:bg-gray-200 cursor-pointer ${activeChat && activeChat.id === contact.id ? 'bg-gray-200' : ''}`;
-                    div.innerHTML = `
-                        <img src="${contact.profilePicUrl}" alt="Foto de perfil" class="w-10 h-10 rounded-full mr-3 border border-gray-300">
-                        <div>
-                            <p class="font-semibold text-gray-800">${contact.username}</p>
-                            <p class="text-sm text-gray-500">${contact.email}</p>
-                        </div>
-                    `;
-                    div.addEventListener('click', () => openChat(contact.id, 'user', contact.username));
-                    contactList.appendChild(div);
-                }
-            });
-
-            groups.forEach(group => {
-                if (group.name.toLowerCase().includes(searchTerm)) {
-                    const div = document.createElement('div');
-                    div.className = `flex items-center p-3 rounded-lg hover:bg-gray-200 cursor-pointer ${activeChat && activeChat.id === group.id ? 'bg-gray-200' : ''}`;
-                    div.innerHTML = `
-                        <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center mr-3">
-                            <i class="fas fa-users text-xl text-gray-600"></i>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-gray-800">${group.name}</p>
-                            <p class="text-sm text-gray-500">${group.members.length} miembros</p>
-                        </div>
-                    `;
-                    // Pass group.members to openChat for group chats
-                    div.addEventListener('click', () => openChat(group.id, 'group', group.name, group.members));
-                    groupList.appendChild(div);
-                }
-            });
-
-            // If lists are empty after filtering, display a message
-            if (contactList.children.length === 1) { // Only the heading
-                const noContacts = document.createElement('p');
-                noContacts.className = "text-center text-gray-500 text-sm mt-4";
-                noContacts.textContent = "No se encontraron contactos.";
-                contactList.appendChild(noContacts);
-            }
-            if (groupList.children.length === 1) { // Only the heading
-                const noGroups = document.createElement('p');
-                noGroups.className = "text-center text-gray-500 text-sm mt-4";
-                noGroups.textContent = "No se encontraron grupos.";
-                groupList.appendChild(noGroups);
-            }
-        }
-
-        searchInput.addEventListener('input', renderContactsAndGroups);
-
-        async function openChat(chatId, chatType, chatName, chatMembers = []) { // Added chatMembers parameter
-            activeChat = { id: chatId, type: chatType, name: chatName, members: chatMembers }; // Store members in activeChat
-            currentChatName.textContent = chatName;
-            chatArea.classList.remove('hidden');
-            contactListSection.classList.add('hidden'); // Hide contact list on mobile
-            chatInfoButton.classList.remove('hidden'); // Show info button
-
-            // Ensure the chat document exists and has the correct members array for security rules
-            const chatDocRef = doc(db, 'chats', chatId);
-            try {
-                // If it's a direct message, members are current user and contact.id
-                // If it's a group, members are passed from the group object.
-                const membersToSet = chatType === 'user' ? [currentUserId, chatId].sort() : chatMembers;
-                
-                await setDoc(chatDocRef, {
-                    type: chatType,
-                    members: membersToSet,
-                    lastActivity: serverTimestamp() // Optional: track last activity
-                }, { merge: true }); // Use merge to avoid overwriting existing chat data (like last message info)
-                console.log(`Ensured chat document ${chatId} exists with members:`, membersToSet);
-            } catch (error) {
-                console.error("Error ensuring chat document exists:", error);
-                addNotification('Error de Chat', 'No se pudo inicializar el chat. Inténtalo de nuevo.', 'error');
-                return; // Prevent loading messages if chat doc setup failed
-            }
-
-            loadMessages(chatId, chatType); // Now, loadMessages will be called after the chat document is ready
-            renderContactsAndGroups(); // Re-render to highlight active chat
-
-            // Hide mobile sidebar after selecting chat
-            sidebar.classList.add('-translate-x-full');
-            sidebarOverlay.classList.add('hidden');
-        }
-
-        showContactsButton.addEventListener('click', showContactsList);
-        showGroupsButton.addEventListener('click', showGroupsList);
-
-        function showContactsList() {
-            contactList.classList.remove('hidden');
-            groupList.classList.add('hidden');
-            showContactsButton.classList.add('bg-gray-200');
-            showGroupsButton.classList.remove('bg-gray-200');
-        }
-
-        function showGroupsList() {
-            groupList.classList.remove('hidden');
-            contactList.classList.add('hidden');
-            showGroupsButton.classList.add('bg-gray-200');
-            showContactsButton.classList.remove('bg-gray-200');
-        }
-
-        // --- Create Group Modal Logic ---
-        createGroupButton.addEventListener('click', () => {
-            createGroupModal.classList.remove('hidden');
-            groupNameInput.value = '';
-            groupMembersInput.value = '';
-            createGroupMessage.classList.add('hidden');
-        });
-
-        cancelCreateGroupButton.addEventListener('click', () => {
-            createGroupModal.classList.add('hidden');
-        });
-
-        createGroupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const groupName = groupNameInput.value.trim();
-            const memberEmailsString = groupMembersInput.value.trim();
-            createGroupMessage.classList.add('hidden');
-
-            if (!groupName) {
-                createGroupMessage.textContent = 'El nombre del grupo es obligatorio.';
-                createGroupMessage.classList.remove('hidden');
+        /**
+         * Listens for changes in the current user's groups and updates the UI.
+         * Escucha cambios en los grupos del usuario actual y actualiza la interfaz de usuario.
+         */
+        function listenForGroups() {
+            if (unsubscribeGroups) unsubscribeGroups(); // Unsubscribe from previous listener
+            if (!currentUserId || !db) {
+                console.warn("[listenForGroups] currentUserId or db is null. Skipping group listener setup.");
                 return;
             }
 
-            let memberEmails = [];
-            if (memberEmailsString) {
-                memberEmails = memberEmailsString.split(',').map(email => email.trim()).filter(email => email !== '');
-            }
-            // Add current user to members by default
-            if (!memberEmails.includes(currentUserEmail)) {
-                memberEmails.push(currentUserEmail);
-            }
+            const groupsCollectionRef = collection(db, `groups`); // Corrected path
+            const q = query(groupsCollectionRef, where('members', 'array-contains', currentUserId));
+            console.log(`[listenForGroups] Path: groups, Query: members array-contains ${currentUserId}`); // Debug log
 
-            try {
-                // Resolve member emails to UIDs
-                const memberUids = [];
-                const usersCollectionRef = collection(db, 'users');
-
-                for (const email of memberEmails) {
-                    const q = query(usersCollectionRef, where('email', '==', email));
-                    const querySnapshot = await getDocs(q);
-                    if (!querySnapshot.empty) {
-                        memberUids.push(querySnapshot.docs[0].id);
+            unsubscribeGroups = onSnapshot(q, (snapshot) => {
+                groups = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); // Changed groupId to id
+                renderGroups(); // Re-render groups list
+                // If current active chat is a group, re-evaluate admin buttons
+                if (activeChat && activeChat.type === 'group') {
+                    const currentGroupData = groups.find(g => g.id === activeChat.id); // Changed groupId to id
+                    if (currentGroupData) {
+                        activeChat.adminId = currentGroupData.adminId; // Update activeChat's adminId
+                        activeChat.members = currentGroupData.members; // Update activeChat's members
+                        if (addGroupMemberButton) { // Check if element exists
+                            if (activeChat.adminId === currentUserId) {
+                                addGroupMemberButton.classList.remove('hidden');
+                            } else {
+                                addGroupMemberButton.classList.add('hidden');
+                            }
+                        }
                     } else {
-                        // Notify if a member email isn't found
-                        addNotification('Miembro No Encontrado', `El usuario con correo ${email} no existe.`, 'warning', 7000);
-                        console.warn(`User with email ${email} not found.`);
+                        // If the current group no longer exists (e.g., user left it), clear chat view
+                        clearChatView();
+                        if (showGroupsButton) showGroupsButton.click(); // Go back to groups list
+                    }
+                }
+            }, (error) => {
+                console.error("Error listening to user groups:", error);
+                addNotification('Error de Grupos', 'Hubo un problema al cargar tus grupos. Intenta recargar la página.', 'error');
+            });
+        }
+
+        /**
+         * Listens for incoming friend requests for the current user.
+         * Escucha las solicitudes de amistad entrantes para el usuario actual.
+         */
+        function listenForFriendRequests() {
+            if (!currentUserId || !db) {
+                console.warn("[listenForFriendRequests] currentUserId or db is null. Skipping friend request listener setup.");
+                return;
+            }
+            const friendRequestsRef = collection(db, `friendRequests`); // Corrected path
+            const q = query(friendRequestsRef, 
+                                    where('receiverId', '==', currentUserId), 
+                                    where('status', '==', 'pending'));
+            console.log(`[listenForFriendRequests] Path: friendRequests, Query: receiverId == ${currentUserId}, status == pending`); // Debug log
+
+            onSnapshot(q, async (snapshot) => {
+                // Filter out old friend request notifications from the notifications array
+                // This ensures only current pending requests are displayed
+                notifications = notifications.filter(n => n.type !== 'friendRequest' || snapshot.docs.some(doc => doc.id === n.data.requestId)); 
+
+                for (const docChange of snapshot.docChanges()) {
+                    const request = { id: docChange.doc.id, ...docChange.doc.data() };
+                    if (docChange.type === 'added' && request.status === 'pending') {
+                        // Fetch sender's username for the notification
+                        const senderDocRef = doc(db, `users`, request.senderId); // Corrected path
+                        const senderDocSnap = await getDoc(senderDocRef);
+                        const senderName = senderDocSnap.exists() ? (senderDocSnap.data().username || senderDocSnap.data().email) : 'Usuario Desconocido';
+
+                        // Add notification only if it's not already there
+                        if (!notifications.some(n => n.type === 'friendRequest' && n.data.requestId === request.id)) {
+                            addNotification(
+                                'Nueva Solicitud de Amistad',
+                                `${senderName} te ha enviado una solicitud de amistad.`,
+                                'friendRequest', // Custom type for friend requests
+                                { requestId: request.id, senderId: request.senderId, senderName: senderName }
+                            );
+                        }
+                    } else if (docChange.type === 'modified') {
+                        // If a request was modified (e.g., accepted/denied), remove its notification
+                        if (request.status !== 'pending') {
+                            notifications = notifications.filter(n => !(n.type === 'friendRequest' && n.data && n.data.requestId === request.id));
+                        }
+                    } else if (docChange.type === 'removed') {
+                        // If a request is removed, remove its notification
+                        notifications = notifications.filter(n => !(n.type === 'friendRequest' && n.data && n.data.requestId === request.id));
+                    }
+                }
+                updateNotificationBadge();
+                // If the notifications modal is open, re-render it based on its current filter
+                if (notificationsModal && !notificationsModal.classList.contains('hidden')) {
+                    const currentFilter = notificationsModal.dataset.filter || null;
+                    showNotificationsModal(currentFilter);
+                }
+            }, (error) => {
+                console.error("Error listening to friend requests:", error);
+                addNotification('Error de Solicitudes', 'Hubo un problema al cargar las solicitudes de amistad. Asegúrate de que las reglas de seguridad de Firestore estén configuradas correctamente.', 'error');
+            });
+        }
+
+        /**
+         * Accepts a friend request, adds both users to each other's contacts.
+         * Acepta una solicitud de amistad, añade a ambos usuarios a sus contactos.
+         * @param {string} requestId - The ID of the friend request document.
+         * @param {string} senderId - The UID of the user who sent the request.
+         */
+        async function acceptFriendRequest(requestId, senderId) {
+            try {
+                const requestDocRef = doc(db, `friendRequests`, requestId); // Corrected path
+                await updateDoc(requestDocRef, { status: 'accepted' });
+
+                // Add to current user's contacts
+                const currentUserDocRef = doc(db, `users`, currentUserId); // Corrected path
+                const currentUserDocSnap = await getDoc(currentUserDocRef);
+                if (currentUserDocSnap.exists()) {
+                    const currentContacts = currentUserDocSnap.data().contacts || [];
+                    if (!currentContacts.includes(senderId)) {
+                        await updateDoc(currentUserDocRef, { contacts: [...currentContacts, senderId] });
                     }
                 }
 
-                if (memberUids.length === 0) {
-                    createGroupMessage.textContent = 'No se pudieron encontrar miembros válidos para el grupo.';
-                    createGroupMessage.classList.remove('hidden');
-                    return;
+                // Add to sender's contacts (if not already there)
+                const senderUserDocRef = doc(db, `users`, senderId); // Corrected path
+                const senderUserDocSnap = await getDoc(senderUserDocRef);
+                if (senderUserDocSnap.exists()) {
+                    const senderContacts = senderUserDocSnap.data().contacts || [];
+                    if (!senderContacts.includes(currentUserId)) {
+                        await updateDoc(senderUserDocRef, { contacts: [...senderContacts, currentUserId] });
+                    }
                 }
+                
+                const senderDocSnap = await getDoc(senderUserDocRef);
+                const senderName = senderDocSnap.exists() ? (senderDocSnap.data().username || senderDocSnap.data().email) : 'Usuario Desconocido';
 
-                // Create the group in Firestore
-                await addDoc(collection(db, 'groups'), {
-                    name: groupName,
-                    members: memberUids,
-                    createdAt: serverTimestamp(),
-                    adminId: currentUserId // The user who created the group is the admin
-                });
-
-                addNotification('Grupo Creado', `El grupo "${groupName}" ha sido creado con éxito.`, 'success');
-                createGroupModal.classList.add('hidden');
+                addNotification('Solicitud Aceptada', `Has aceptado la solicitud de amistad de ${senderName}. Ahora son contactos.`, 'success');
+                // Re-fetch contacts to update the list immediately
+                listenForContacts();
             } catch (error) {
-                console.error("Error creating group:", error);
-                createGroupMessage.textContent = 'Hubo un error al crear el grupo. Inténtalo de nuevo.';
-                createGroupMessage.classList.remove('hidden');
-                addNotification('Error al Crear Grupo', 'Hubo un error al crear el grupo.', 'error');
+                console.error('Error al aceptar solicitud de amistad:', error);
+                addNotification('Error', 'No se pudo aceptar la solicitud de amistad.', 'error');
             }
-        });
+        }
 
-        // --- Change Username Modal Logic ---
-        changeUsernameButton.addEventListener('click', () => {
-            changeUsernameModal.classList.remove('hidden');
-            newUsernameInput.value = userDisplayName || ''; // Pre-fill with current username
-            changeUsernameMessage.classList.add('hidden');
-        });
+        /**
+         * Denies a friend request, changing its status to 'denied'.
+         * Deniega una solicitud de amistad, cambiando su estado a 'denied'.
+         * @param {string} requestId - The ID of the friend request document.
+         */
+        async function denyFriendRequest(requestId) {
+            try {
+                const requestDocRef = doc(db, `friendRequests`, requestId); // Corrected path
+                await updateDoc(requestDocRef, { status: 'denied' });
+                addNotification('Solicitud Denegada', 'Has denegado la solicitud de amistad.', 'info');
+            } catch (error) {
+                console.error('Error al denegar solicitud de amistad:', error);
+                addNotification('Error', 'No se pudo denegar la solicitud de amistad.', 'error');
+            }
+        }
 
-        dropdownChangeUsername.addEventListener('click', () => {
-            changeUsernameModal.classList.remove('hidden');
-            newUsernameInput.value = userDisplayName || ''; // Pre-fill with current username
-            changeUsernameMessage.classList.add('hidden');
-            userMenuDropdown.classList.add('hidden'); // Close dropdown
-        });
-
-        cancelChangeUsernameButton.addEventListener('click', () => {
-            changeUsernameModal.classList.add('hidden');
-        });
-
-        changeUsernameForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newUsername = newUsernameInput.value.trim();
-            changeUsernameMessage.classList.add('hidden');
-
-            if (!newUsername) {
-                changeUsernameMessage.textContent = 'El nombre de usuario no puede estar vacío.';
-                changeUsernameMessage.classList.remove('hidden');
+        /**
+         * Adds a member to the active group.
+         * Añade un miembro al grupo activo.
+         * @param {string} memberIdentifier - The email or username of the user to add.
+         */
+        async function addMemberToGroup(memberIdentifier) {
+            if (addGroupMemberMessage) addGroupMemberMessage.textContent = '';
+            if (!activeChat || activeChat.type !== 'group') {
+                showMessageBox('Error', 'No hay un grupo activo seleccionado.');
                 return;
             }
-
-            if (newUsername === userDisplayName) {
-                changeUsernameMessage.textContent = 'El nuevo nombre de usuario es igual al actual.';
-                changeUsernameMessage.classList.remove('hidden');
+            if (activeChat.adminId !== currentUserId) {
+                showMessageBox('Permiso Denegado', 'Solo el administrador del grupo puede añadir miembros.');
                 return;
             }
 
             try {
-                const userDocRef = doc(db, 'users', currentUserId);
-                await updateDoc(userDocRef, {
-                    username: newUsername
-                });
-
-                userDisplayName = newUsername; // Update global variable
-                userDisplayNameSidebar.textContent = newUsername; // Update sidebar UI
-                addNotification('Nombre de Usuario Actualizado', `Tu nombre de usuario se ha cambiado a "${newUsername}" correctamente.`, 'success');
-                changeUsernameModal.classList.add('hidden');
-            } catch (error) {
-                console.error('Error al cambiar nombre de usuario:', error);
-                let errorMessage = `Hubo un problema al cambiar el nombre de usuario.`;
-                if (error.code === 'permission-denied' || (error.message && error.message.includes('Missing or insufficient permissions'))) {
-                    errorMessage = 'No tienes permisos suficientes para cambiar el nombre de usuario. Asegúrate de que las reglas de seguridad de Firestore estén configuradas correctamente.';
-                }
-                changeUsernameMessage.textContent = errorMessage;
-                changeUsernameMessage.classList.remove('hidden');
-                addNotification('Error al Cambiar Nombre de Usuario', errorMessage, 'error');
-            }
-        });
-
-        // --- Mobile Sidebar Toggle ---
-        mobileSidebarToggle.addEventListener('click', () => {
-            sidebar.classList.remove('-translate-x-full');
-            sidebarOverlay.classList.remove('hidden');
-        });
-
-        closeSidebarButton.addEventListener('click', () => {
-            sidebar.classList.add('-translate-x-full');
-            sidebarOverlay.classList.add('hidden');
-        });
-
-        sidebarOverlay.addEventListener('click', () => {
-            sidebar.classList.add('-translate-x-full');
-            sidebarOverlay.classList.add('hidden');
-        });
-
-        // --- User Profile Dropdown ---
-        userProfileButton.addEventListener('click', () => {
-            userMenuDropdown.classList.toggle('hidden');
-        });
-
-        // Close dropdown if clicked outside
-        document.addEventListener('click', (event) => {
-            if (!userProfileButton.contains(event.target) && !userMenuDropdown.contains(event.target)) {
-                userMenuDropdown.classList.add('hidden');
-            }
-        });
-
-        // --- Chat Info Modal Logic ---
-        chatInfoButton.addEventListener('click', async () => {
-            if (!activeChat) return;
-
-            chatInfoDetails.innerHTML = '';
-            leaveGroupButton.classList.add('hidden');
-
-            const titleElement = document.createElement('h4');
-            titleElement.className = 'font-semibold text-lg mb-2';
-            titleElement.textContent = `Nombre: ${activeChat.name}`;
-            chatInfoDetails.appendChild(titleElement);
-
-            if (activeChat.type === 'user') {
-                const contactDocRef = doc(db, 'users', activeChat.id);
-                const contactDocSnap = await getDoc(contactDocRef);
-                if (contactDocSnap.exists()) {
-                    const contactData = contactDocSnap.data();
-                    const emailElement = document.createElement('p');
-                    emailElement.className = 'text-gray-700';
-                    emailElement.textContent = `Correo: ${contactData.email}`;
-                    chatInfoDetails.appendChild(emailElement);
+                let querySnapshot;
+                if (memberIdentifier.includes('@')) {
+                    const usersRef = collection(db, `users`); // Corrected path
+                    const q = query(usersRef, where('email', '==', memberIdentifier));
+                    querySnapshot = await getDocs(q);
                 } else {
-                    const messageElement = document.createElement('p');
-                    messageElement.className = 'text-gray-700';
-                    messageElement.textContent = 'Información de contacto no disponible.';
-                    chatInfoDetails.appendChild(messageElement);
+                    const usersRef = collection(db, `users`); // Corrected path
+                    const q = query(usersRef, where('username', '==', memberIdentifier));
+                    querySnapshot = await getDocs(q);
                 }
-            } else if (activeChat.type === 'group') {
-                const groupDocRef = doc(db, 'groups', activeChat.id);
+
+                if (querySnapshot.empty) {
+                    if (addGroupMemberMessage) addGroupMemberMessage.textContent = 'Usuario no encontrado. Asegúrate de que el correo o nombre de usuario sea correcto.';
+                    return;
+                }
+
+                const userToAddDoc = querySnapshot.docs[0];
+                const userToAddUid = userToAddDoc.id;
+                const userToAddName = userToAddDoc.data().username || userToAddDoc.data().email;
+
+                const groupDocRef = doc(db, `groups`, activeChat.id); // Corrected path
                 const groupDocSnap = await getDoc(groupDocRef);
 
                 if (groupDocSnap.exists()) {
                     const groupData = groupDocSnap.data();
-                    const membersTitle = document.createElement('p');
-                    membersTitle.className = 'font-semibold mt-3 mb-1';
-                    membersTitle.textContent = 'Miembros:';
-                    chatInfoDetails.appendChild(membersTitle);
+                    const currentMembers = groupData.members || [];
 
-                    const membersList = document.createElement('ul');
-                    membersList.className = 'list-disc list-inside text-gray-700';
-                    chatInfoDetails.appendChild(membersList);
-
-                    // Fetch usernames for each member UID
-                    for (const memberId of groupData.members) {
-                        const memberDocRef = doc(db, 'users', memberId);
-                        const memberDocSnap = await getDoc(memberDocRef);
-                        const memberName = memberDocSnap.exists() ? (memberDocSnap.data().username || memberDocSnap.data().email.split('@')[0]) : 'Usuario Desconocido';
-                        const listItem = document.createElement('li');
-                        listItem.textContent = memberName;
-                        if (memberId === groupData.adminId) {
-                            listItem.textContent += ' (Admin)';
-                            listItem.classList.add('font-medium');
-                        }
-                        if (memberId === currentUserId) {
-                            listItem.classList.add('text-custom-primary', 'font-semibold');
-                        }
-                        membersList.appendChild(listItem);
+                    if (currentMembers.includes(userToAddUid)) {
+                        if (addGroupMemberMessage) addGroupMemberMessage.textContent = `${userToAddName} ya es miembro de este grupo.`;
+                        return;
                     }
-                    leaveGroupButton.classList.remove('hidden'); // Show leave group button for groups
+
+                    await updateDoc(groupDocRef, {
+                        members: [...currentMembers, userToAddUid]
+                    });
+                    addNotification('Miembro Añadido', `${userToAddName} ha sido añadido al grupo "${activeChat.name}".`, 'success');
+                    if (addGroupMemberModal) addGroupMemberModal.classList.add('hidden');
                 } else {
-                    const messageElement = document.createElement('p');
-                    messageElement.className = 'text-gray-700';
-                    messageElement.textContent = 'Información del grupo no disponible.';
-                    chatInfoDetails.appendChild(messageElement);
+                    if (addGroupMemberMessage) addGroupMemberMessage.textContent = 'Error: El grupo no existe.';
                 }
+            } catch (error) {
+                console.error('Error al añadir miembro al grupo:', error);
+                if (addGroupMemberMessage) addGroupMemberMessage.textContent = `Hubo un problema al añadir al miembro.`;
+                addNotification('Error', 'No se pudo añadir al miembro al grupo.', 'error');
+            }
+        }
+
+        /**
+         * Allows the current user to leave the active group.
+         * Permite al usuario actual salir del grupo activo.
+         */
+        async function leaveGroup() {
+            if (!activeChat || activeChat.type !== 'group') {
+                showMessageBox('Error', 'No hay un grupo activo seleccionado para salir.');
+                return;
             }
 
-            chatInfoModal.classList.remove('hidden');
-        });
+            const confirmed = await showConfirmModal('Confirmar Salida del Grupo', `¿Estás seguro de que quieres salir del grupo "${activeChat.name}"?`);
+            if (!confirmed) {
+                return;
+            }
 
-        closeChatInfoModalButton.addEventListener('click', () => {
-            chatInfoModal.classList.add('hidden');
-        });
+            try {
+                const groupDocRef = doc(db, `groups`, activeChat.id); // Corrected path
+                const groupDocSnap = await getDoc(groupDocRef);
 
-        leaveGroupButton.addEventListener('click', async () => {
-            if (!activeChat || activeChat.type !== 'group' || !currentUserId) return;
+                if (groupDocSnap.exists()) {
+                    const groupData = groupDocSnap.data();
+                    let currentMembers = groupData.members || [];
 
-            if (confirm(`¿Estás seguro de que quieres abandonar el grupo "${activeChat.name}"?`)) {
-                try {
-                    const groupDocRef = doc(db, 'groups', activeChat.id);
-                    const groupDocSnap = await getDoc(groupDocRef);
-
-                    if (groupDocSnap.exists()) {
-                        const groupData = groupDocSnap.data();
-                        const updatedMembers = groupData.members.filter(memberId => memberId !== currentUserId);
-
-                        if (updatedMembers.length === 0) {
-                            // If no members left, delete the group
-                            await deleteDoc(groupDocRef);
-                            addNotification('Grupo Eliminado', `El grupo "${activeChat.name}" ha sido eliminado.`, 'info');
-                        } else {
-                            // Update group members
-                            await updateDoc(groupDocRef, {
-                                members: updatedMembers
-                            });
-                            addNotification('Grupo Abandonado', `Has abandonado el grupo "${activeChat.name}" correctamente.`, 'success');
-                        }
-
-                        // Close chat info modal and reset active chat
-                        chatInfoModal.classList.add('hidden');
-                        activeChat = null;
-                        currentChatName.textContent = 'Selecciona un chat';
-                        chatArea.classList.add('hidden');
-                        chatMessagesContainer.innerHTML = '';
-                        chatInfoButton.classList.add('hidden');
-                        loadGroups(); // Reload groups to reflect changes
-                        showGroupsList(); // Show group list
+                    if (!currentMembers.includes(currentUserId)) {
+                        showMessageBox('Error', 'No eres miembro de este grupo.');
+                        return;
                     }
-                } catch (error) {
-                    console.error('Error al abandonar el grupo:', error);
-                    addNotification('Error', 'Hubo un problema al abandonar el grupo.', 'error');
+
+                    // Remove current user from members array
+                    currentMembers = currentMembers.filter(memberId => memberId !== currentUserId);
+
+                    if (currentMembers.length === 0) {
+                        // If no members left, delete the group
+                        await deleteDoc(groupDocRef);
+                        addNotification('Grupo Eliminado', `El grupo "${activeChat.name}" ha sido eliminado ya que no quedan miembros.`, 'info');
+                    } else {
+                        // If members remain, update the group
+                        await updateDoc(groupDocRef, {
+                            members: currentMembers
+                        });
+                        addNotification('Grupo Abandonado', `Has salido del grupo "${activeChat.name}" correctamente.`, 'success');
+                    }
+                    clearChatView(); // Clear chat view after leaving group
+                    if (showGroupsButton) showGroupsButton.click(); // Go back to groups list
+                } else {
+                    showMessageBox('Error', 'El grupo ya no existe.');
+                    clearChatView();
+                    if (showGroupsButton) showGroupsButton.click();
                 }
+            } catch (error) {
+                console.error('Error al salir del grupo:', error);
+                addNotification('Error', 'No se pudo salir del grupo. Por favor, inténtalo de nuevo.', 'error');
+            }
+        }
+
+
+        // --- Firebase Initialization and Authentication State Listener ---
+        // This block will be executed once the DOM is fully loaded.
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
+                    app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+
+                    console.log("Firebase initialized. App ID:", appId); // Debug log for appId
+
+                    onAuthStateChanged(auth, async (user) => {
+                        if (user) {
+                            // User is signed in
+                            currentUserId = user.uid;
+                            currentUserEmail = user.email;
+                            
+                            console.log("User authenticated. UID:", currentUserId, "Email:", currentUserEmail); // Debug log for authenticated user
+
+                            // Fetch user's profile data from Firestore to get profilePicUrl and new fields
+                            const userDocRef = doc(db, `users`, currentUserId); // Corrected path
+                            const userDocSnap = await getDoc(userDocRef);
+
+                            if (userDocSnap.exists()) {
+                                const userData = userDocSnap.data();
+                                userProfilePicUrl = userData.profilePicUrl || "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF";
+                                if (profilePic) profilePic.src = userProfilePicUrl;
+                                userDisplayName = userData.username || user.displayName || user.email.split('@')[0];
+                                if (userDisplayNameElement) userDisplayNameElement.textContent = userDisplayName;
+
+                                if (emailVerifiedText) {
+                                    emailVerifiedText.textContent = user.emailVerified ? 'Email Verificado ✅' : 'Email No Verificado ❌';
+                                    emailVerifiedText.classList.toggle('text-green-600', user.emailVerified);
+                                    emailVerifiedText.classList.toggle('text-red-600', !user.emailVerified);
+                                }
+                                if (resendVerificationEmailSidebarButton) resendVerificationEmailSidebarButton.classList.toggle('hidden', user.emailVerified);
+                                
+                                if (userPhoneDisplay) userPhoneDisplay.textContent = userData.phoneNumber ? `Teléfono: ${userData.phoneNumber}` : '';
+                                if (userDobDisplay) userDobDisplay.textContent = userData.dateOfBirth ? `Nacimiento: ${userData.dateOfBirth}` : '';
+                                if (userAgeDisplay) userAgeDisplay.textContent = userData.age ? `Edad: ${userData.age}` : '';
+
+                                await updateDoc(userDocRef, { lastOnline: serverTimestamp(), emailVerified: user.emailVerified }); 
+                            } else {
+                                const initialUsername = user.displayName || user.email.split('@')[0];
+                                await setDoc(userDocRef, {
+                                    email: currentUserEmail,
+                                    username: initialUsername,
+                                    profilePicUrl: userProfilePicUrl,
+                                    lastOnline: serverTimestamp(),
+                                    contacts: [],
+                                    phoneNumber: null,
+                                    dateOfBirth: null,
+                                    age: null,
+                                    emailVerified: user.emailVerified
+                                }, { merge: true });
+                                if (profilePic) profilePic.src = userProfilePicUrl;
+                                userDisplayName = initialUsername;
+                                if (userDisplayNameElement) userDisplayNameElement.textContent = userDisplayName;
+                                if (emailVerifiedText) {
+                                    emailVerifiedText.textContent = user.emailVerified ? 'Email Verificado ✅' : 'Email No Verificado ❌';
+                                    emailVerifiedText.classList.toggle('text-green-600', user.emailVerified);
+                                    emailVerifiedText.classList.toggle('text-red-600', !user.emailVerified);
+                                }
+                                if (resendVerificationEmailSidebarButton) resendVerificationEmailSidebarButton.classList.toggle('hidden', user.emailVerified);
+                            }
+
+                            if (authSection) authSection.classList.add('hidden');
+                            if (appSection) appSection.classList.remove('hidden');
+
+                            // Call listeners AFTER currentUserId is confirmed
+                            listenForContacts();
+                            listenForGroups();
+                            listenForFriendRequests(); // Start listening for friend requests
+
+                            if (showContactsButton) showContactsButton.click();
+
+                        } else {
+                            currentUserId = null;
+                            currentUserEmail = null;
+                            userDisplayName = null;
+                            userProfilePicUrl = "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF";
+
+                            if (appSection) appSection.classList.add('hidden');
+                            if (authSection) authSection.classList.remove('hidden');
+                            showLogin();
+
+                            if (unsubscribeMessages) unsubscribeMessages();
+                            if (unsubscribeContacts) unsubscribeContacts();
+                            if (unsubscribeGroups) unsubscribeGroups();
+                            contacts = [];
+                            groups = [];
+                            clearChatView();
+                            notifications = [];
+                            updateNotificationBadge();
+                        }
+                    });
+
+                } else {
+                    console.error("Firebase config not found or incomplete. Please ensure your actual Firebase project details are provided.");
+                    const authMessageElement = document.getElementById('auth-message');
+                    const authButtonElement = document.getElementById('auth-button');
+                    const toggleAuthButtonElement = document.getElementById('toggle-auth');
+
+                    if (authMessageElement) authMessageElement.textContent = "Error: Configuración de Firebase no encontrada o incompleta. La aplicación no funcionará correctamente. Por favor, asegúrate de que los valores de Firebase en el código son correctos.";
+                    if (authButtonElement) authButtonElement.disabled = true;
+                    if (toggleAuthButtonElement) toggleAuthButtonElement.disabled = true;
+                }
+            } catch (firebaseInitError) {
+                console.error("Error during Firebase initialization:", firebaseInitError);
+                const authMessageElement = document.getElementById('auth-message');
+                const authButtonElement = document.getElementById('auth-button');
+                const toggleAuthButtonElement = document.getElementById('toggle-auth');
+                if (authMessageElement) authMessageElement.textContent = `Error crítico al inicializar Firebase: ${firebaseInitError.message}. La aplicación no funcionará.`;
+                if (authButtonElement) authButtonElement.disabled = true;
+                if (toggleAuthButtonElement) toggleAuthButtonElement.disabled = true;
+            }
+            updateNotificationBadge(); // Initialize badge on load
+
+            // Apply saved theme on load
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                if (themeToggleButton) themeToggleButton.innerHTML = '<i class="fas fa-moon mr-2"></i>Cambiar Tema';
+            } else {
+                // Default to light mode if no preference or 'light'
+                if (themeToggleButton) themeToggleButton.innerHTML = '<i class="fas fa-sun mr-2"></i>Cambiar Tema';
             }
         });
 
+        // --- Event Listeners ---
+        if (toggleAuthButton) {
+            toggleAuthButton.addEventListener('click', () => {
+                if (authForm && authForm.dataset.mode === 'login') {
+                    showRegister();
+                } else {
+                    showLogin();
+                }
+            });
+        }
+
+        if (authForm) {
+            authForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = emailInput.value;
+                const password = passwordInput.value;
+                let username = usernameInput ? usernameInput.value.trim() : ''; // Check if usernameInput exists
+                if (authMessage) authMessage.textContent = '';
+
+                if (authForm.dataset.mode === 'register') {
+                    const phoneNumber = phoneInput ? phoneInput.value.trim() : null;
+                    const dateOfBirth = dobInput ? dobInput.value : null;
+                    const age = ageInput ? parseInt(ageInput.value, 10) : null;
+
+                    if (!username) {
+                        username = `SynergiCode-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+                    }
+
+                    try {
+                        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                        const user = userCredential.user;
+
+                        await sendEmailVerification(user);
+                        addNotification('Registro Exitoso', `¡Bienvenido! Se ha enviado un email de verificación a ${email}.`, 'success');
+                        showEmailSentModal();
+
+                        await updateProfile(user, { displayName: username });
+                        
+                        const userDocRef = doc(db, `users`, user.uid); // Corrected path
+                        await setDoc(userDocRef, {
+                            email: email,
+                            username: username,
+                            profilePicUrl: userProfilePicUrl,
+                            lastOnline: serverTimestamp(),
+                            contacts: [],
+                            phoneNumber: phoneNumber,
+                            dateOfBirth: dateOfBirth,
+                            age: age,
+                            emailVerified: user.emailVerified
+                        }, { merge: true });
+                        
+                    } catch (error) {
+                        console.error('Error al registrar:', error);
+                        let errorMessage = 'Error al registrar. Por favor, inténtalo de nuevo.';
+                        switch (error.code) {
+                            case 'auth/email-already-in-use':
+                                errorMessage = 'Este correo electrónico ya está en uso. Por favor, inicia sesión o usa otro correo.';
+                                break;
+                            case 'auth/invalid-email':
+                                errorMessage = 'El formato del correo electrónico es inválido.';
+                                break;
+                            case 'auth/weak-password':
+                                errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
+                                break;
+                            default:
+                                errorMessage = `Error de registro: ${error.message}`;
+                                break;
+                        }
+                        if (authMessage) authMessage.textContent = errorMessage;
+                        addNotification('Error de Registro', errorMessage, 'error');
+                    }
+                } else { // Login mode
+                    try {
+                        await signInWithEmailAndPassword(auth, email, password);
+                        addNotification('Inicio de Sesión Exitoso', `¡Bienvenido de nuevo, ${email.split('@')[0]}!`, 'success');
+                    } catch (error) {
+                        console.error('Error al iniciar sesión:', error);
+                        let errorMessage = '';
+                        switch (error.code) {
+                            case 'auth/invalid-email':
+                            case 'auth/user-not-found':
+                            case 'auth/wrong-password':
+                            case 'auth/invalid-credential':
+                                errorMessage = 'Alguien está intentando acceder a tu cuenta o las credenciales son incorrectas.';
+                                break;
+                            default:
+                                errorMessage = `Ha ocurrido un error inesperado al iniciar sesión.`;
+                                break;
+                        }
+                        if (authMessage) authMessage.textContent = errorMessage;
+                        addNotification('Error de Inicio de Sesión', errorMessage, 'error');
+                    }
+                }
+            });
+        }
+
+        if (logoutButton) {
+            logoutButton.addEventListener('click', async () => {
+                try {
+                    if (currentUserId) {
+                        const userDocRef = doc(db, `users`, currentUserId); // Corrected path
+                        await updateDoc(userDocRef, { lastOnline: null });
+                    }
+                    await signOut(auth);
+                    addNotification('Sesión Cerrada', 'Has cerrado sesión correctamente.', 'info');
+                } catch (error) {
+                    console.error('Error al cerrar sesión:', error);
+                    addNotification('Error al Cerrar Sesión', `Hubo un problema al cerrar sesión. Inténtalo de nuevo.`, 'error');
+                }
+            });
+        }
+
+        // Mobile logout button listener
+        if (mobileLogoutButton) {
+            mobileLogoutButton.addEventListener('click', async () => {
+                try {
+                    if (currentUserId) {
+                        const userDocRef = doc(db, `users`, currentUserId); // Corrected path
+                        await updateDoc(userDocRef, { lastOnline: null });
+                    }
+                    await signOut(auth);
+                    addNotification('Sesión Cerrada', 'Has cerrado sesión correctamente.', 'info');
+                } catch (error) {
+                    console.error('Error al cerrar sesión:', error);
+                    addNotification('Error al Cerrar Sesión', `Hubo un problema al cerrar sesión. Inténtalo de nuevo.`, 'error');
+                }
+            });
+        }
+
+
+        if (sendMessageButton) {
+            sendMessageButton.addEventListener('click', async () => {
+                const messageContent = messageInput ? messageInput.value.trim() : '';
+                const mediaFile = chatMediaUploadInput && chatMediaUploadInput.files ? chatMediaUploadInput.files[0] : null;
+
+                if (messageContent === '' && !mediaFile) {
+                    console.log("[sendMessageButton] No content or media to send.");
+                    return;
+                }
+                if (!activeChat) {
+                    addNotification('Error', 'Selecciona un chat para enviar mensajes.', 'error');
+                    console.warn("[sendMessageButton] No active chat selected.");
+                    return;
+                }
+
+                addNotification('Enviando Mensaje', '...');
+                console.log(`[sendMessageButton] Attempting to send message to chat: ${activeChat.id}, type: ${activeChat.type}`);
+
+                let mediaUrl = null;
+                let mediaType = null;
+
+                if (mediaFile) {
+                    try {
+                        console.log("[sendMessageButton] Uploading media file...");
+                        mediaUrl = await uploadFileToCloudinary(mediaFile);
+                        mediaType = mediaFile.type;
+                        addNotification('Subida Exitosa', 'Archivo multimedia subido. Enviando mensaje...', 'success');
+                        console.log("[sendMessageButton] Media uploaded successfully:", mediaUrl);
+                    } catch (error) {
+                        console.error('[sendMessageButton] Error uploading media file:', error);
+                        addNotification('Error de Subida', `No se pudo subir el archivo.`, 'error');
+                        return;
+                    }
+                }
+
+                try {
+                    let chatDocRef;
+                    let membersToSet = [];
+
+                    if (activeChat.type === 'user') {
+                        const chatUsers = [currentUserId, activeChat.id].sort();
+                        const dmChatId = chatUsers.join('_');
+                        chatDocRef = doc(db, `chats`, dmChatId); // Corrected path
+                        membersToSet = chatUsers;
+                        console.log(`[sendMessageButton] DM Chat Doc Ref Path: ${chatDocRef.path}`);
+                    } else if (activeChat.type === 'group') {
+                        chatDocRef = doc(db, `chats`, activeChat.id); // Corrected path
+                        membersToSet = activeChat.members; // Use members from activeChat for group
+                        console.log(`[sendMessageButton] Group Chat Doc Ref Path: ${chatDocRef.path}`);
+                    }
+                    
+                    // Ensure the chat document exists and has the correct members array for security rules
+                    await setDoc(chatDocRef, {
+                        type: activeChat.type,
+                        members: membersToSet,
+                        lastActivity: serverTimestamp()
+                    }, { merge: true });
+
+                    const messagesCollectionRef = collection(chatDocRef, 'messages');
+                    const messageData = {
+                        senderId: currentUserId,
+                        content: messageContent,
+                        mediaUrl: mediaUrl,
+                        mediaType: mediaType,
+                        timestamp: serverTimestamp()
+                    };
+                    console.log("[sendMessageButton] Adding message to Firestore:", messageData);
+                    await addDoc(messagesCollectionRef, messageData);
+                    console.log("[sendMessageButton] Message successfully added to Firestore.");
+
+                    if (messageInput) messageInput.value = '';
+                    if (chatMediaUploadInput) chatMediaUploadInput.value = '';
+                    addNotification('Mensaje Enviado', 'Tu mensaje ha sido enviado.', 'success'); // Add success notification here
+                } catch (error) {
+                    console.error('Error al enviar mensaje:', error);
+                    addNotification('Error al Enviar Mensaje', `No se pudo enviar el mensaje. Por favor, inténtalo de nuevo.`, 'error');
+                }
+            });
+        }
+
+        if (messageInput) {
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && sendMessageButton) {
+                    sendMessageButton.click();
+                }
+            });
+        }
+
+        if (showContactsButton) {
+            showContactsButton.addEventListener('click', () => {
+                if (contactsListView) contactsListView.classList.remove('hidden');
+                if (groupsListView) groupsListView.classList.add('hidden');
+                clearChatView();
+            });
+        }
+
+        if (showGroupsButton) {
+            showGroupsButton.addEventListener('click', () => {
+                if (groupsListView) groupsListView.classList.remove('hidden');
+                if (contactsListView) contactsListView.classList.add('hidden');
+                clearChatView();
+            });
+        }
+
+        if (addContactButton) {
+            addContactButton.addEventListener('click', () => {
+                if (addContactModal) addContactModal.classList.remove('hidden');
+                if (addContactMessage) addContactMessage.textContent = '';
+                if (contactInput) contactInput.value = '';
+            });
+        }
+
+        if (cancelAddContactButton) {
+            cancelAddContactButton.addEventListener('click', () => {
+                if (addContactModal) addContactModal.classList.add('hidden');
+            });
+        }
+
+        if (addContactForm) {
+            addContactForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const input = contactInput ? contactInput.value.trim() : '';
+                if (addContactMessage) addContactMessage.textContent = '';
+
+                if (input === '') {
+                    if (addContactMessage) addContactMessage.textContent = 'Por favor, introduce un correo electrónico o un nombre de usuario.';
+                    return;
+                }
+                if (input === currentUserEmail || input === userDisplayName) {
+                    if (addContactMessage) addContactMessage.textContent = 'No puedes enviarte una solicitud de amistad a ti mismo.';
+                    return;
+                }
+
+                try {
+                    let querySnapshot;
+                    if (input.includes('@')) {
+                        const usersRef = collection(db, `users`); // Corrected path
+                        const q = query(usersRef, where('email', '==', input));
+                        querySnapshot = await getDocs(q);
+                    } else {
+                        const usersRef = collection(db, `users`); // Corrected path
+                        const q = query(usersRef, where('username', '==', input));
+                        querySnapshot = await getDocs(q);
+                    }
+                    
+
+                    if (querySnapshot.empty) {
+                        if (addContactMessage) addContactMessage.textContent = 'Usuario no encontrado. Asegúrate de que el correo o nombre de usuario sea correcto.';
+                        return;
+                    }
+
+                    const contactDoc = querySnapshot.docs[0];
+                    const contactUid = contactDoc.id;
+                    const contactData = contactDoc.data();
+
+                    // Check if already contacts
+                    if (contacts.some(c => c.id === contactUid)) { // Changed uid to id
+                        if (addContactMessage) addContactMessage.textContent = 'Este usuario ya es tu contacto.';
+                        return;
+                    }
+
+                    // Check for existing pending friend requests (sender -> receiver OR receiver -> sender)
+                    const friendRequestsRef = collection(db, `friendRequests`); // Corrected path
+                    const q1 = query(friendRequestsRef, 
+                                     where('senderId', '==', currentUserId), 
+                                     where('receiverId', '==', contactUid), 
+                                     where('status', '==', 'pending'));
+                    const q2 = query(friendRequestsRef, 
+                                     where('senderId', '==', contactUid), 
+                                     where('receiverId', '==', currentUserId), 
+                                     where('status', '==', 'pending'));
+
+                    const [snapshot1, snapshot2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+
+                    if (!snapshot1.empty || !snapshot2.empty) {
+                        if (addContactMessage) addContactMessage.textContent = 'Ya existe una solicitud de amistad pendiente con este usuario.';
+                        addNotification('Solicitud Pendiente', 'Ya tienes una solicitud de amistad pendiente con este usuario o viceversa.', 'info');
+                        return;
+                    }
+
+                    // Send friend request instead of adding directly
+                    await addDoc(friendRequestsRef, {
+                        senderId: currentUserId,
+                        receiverId: contactUid,
+                        status: 'pending',
+                        timestamp: serverTimestamp()
+                    });
+                    addNotification('Solicitud Enviada', `Solicitud de amistad enviada a ${contactData.username || contactData.email}.`, 'success');
+                    if (addContactModal) addContactModal.classList.add('hidden');
+                } catch (error) {
+                    console.error('Error al añadir contacto (enviar solicitud):', error);
+                    if (addContactMessage) addContactMessage.textContent = `Hubo un problema al enviar la solicitud. Por favor, inténtalo de nuevo.`;
+                    addNotification('Error al Enviar Solicitud', `Hubo un problema al enviar la solicitud.`, 'error');
+                }
+            });
+        }
+
+        if (uploadGroupPicButton) {
+            uploadGroupPicButton.addEventListener('click', () => {
+                if (groupPhotoUploadInput) groupPhotoUploadInput.click();
+            });
+        }
+
+        if (groupPhotoUploadInput) {
+            groupPhotoUploadInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file && groupPhotoPreview) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        groupPhotoPreview.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                } else if (groupPhotoPreview) {
+                    groupPhotoPreview.src = "https://placehold.co/80x80/E2E8F0/4A5568?text=Grupo"; // Reset to default
+                }
+            });
+        }
+
+        if (createGroupButton) {
+            createGroupButton.addEventListener('click', () => {
+                if (createGroupModal) createGroupModal.classList.remove('hidden');
+                if (createGroupMessage) createGroupMessage.textContent = '';
+                if (groupNameInput) groupNameInput.value = '';
+                if (groupDescriptionInput) groupDescriptionInput.value = '';
+                if (groupPhotoPreview) groupPhotoPreview.src = "https://placehold.co/80x80/E2E8F0/4A5568?text=Grupo"; // Reset preview
+                if (groupPhotoUploadInput) groupPhotoUploadInput.value = ''; // Clear file input
+                if (groupMemberSelection) groupMemberSelection.innerHTML = '';
+                if (contacts.length === 0) {
+                    if (noContactsForGroup) noContactsForGroup.classList.remove('hidden');
+                    return;
+                }
+                if (noContactsForGroup) noContactsForGroup.classList.add('hidden');
+
+                contacts.forEach(contact => {
+                    const div = document.createElement('div');
+                    div.classList.add('flex', 'items-center', 'space-x-2');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `member-${contact.id}`; // Changed uid to id
+                    checkbox.value = contact.id; // Changed uid to id
+                    checkbox.classList.add('rounded', 'text-custom-secondary-blue', 'focus:ring-custom-secondary-blue');
+                    const label = document.createElement('label');
+                    label.htmlFor = `member-${contact.id}`; // Changed uid to id
+                    label.classList.add('text-gray-700');
+                    label.textContent = contact.username || contact.email;
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    if (groupMemberSelection) groupMemberSelection.appendChild(div);
+                });
+            });
+        }
+
+        if (cancelCreateGroupButton) {
+            cancelCreateGroupButton.addEventListener('click', () => {
+                if (createGroupModal) createGroupModal.classList.add('hidden');
+            });
+        }
+
+        if (createGroupForm) {
+            createGroupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const groupName = groupNameInput ? groupNameInput.value.trim() : '';
+                const groupDescription = groupDescriptionInput ? groupDescriptionInput.value.trim() : '';
+                const groupPhotoFile = groupPhotoUploadInput && groupPhotoUploadInput.files ? groupPhotoUploadInput.files[0] : null;
+                const selectedMembers = Array.from(groupMemberSelection ? groupMemberSelection.querySelectorAll('input[type="checkbox"]:checked') : [])
+                                           .map(checkbox => checkbox.value);
+                if (createGroupMessage) createGroupMessage.textContent = '';
+
+                if (groupName === '') {
+                    if (createGroupMessage) createGroupMessage.textContent = 'El nombre del grupo no puede estar vacío.';
+                    return;
+                }
+
+                if (!selectedMembers.includes(currentUserId)) {
+                    selectedMembers.push(currentUserId);
+                }
+
+                let groupPhotoUrl = null;
+                if (groupPhotoFile) {
+                    try {
+                        groupPhotoUrl = await uploadFileToCloudinary(groupPhotoFile);
+                        addNotification('Subida Exitosa', 'Foto de grupo subida. Creando grupo...', 'success');
+                    } catch (error) {
+                        console.error('Error al subir la foto del grupo:', error);
+                        addNotification('Error de Subida', `No se pudo subir la foto del grupo.`, 'error');
+                        return;
+                    }
+                }
+
+                try {
+                    const groupsCollectionRef = collection(db, `groups`); // Corrected path
+                    await addDoc(groupsCollectionRef, {
+                        name: groupName,
+                        description: groupDescription,
+                        members: selectedMembers,
+                        adminId: currentUserId,
+                        photoUrl: groupPhotoUrl, // Save the photo URL
+                        createdAt: serverTimestamp()
+                    });
+                    addNotification('Grupo Creado', `El grupo "${groupName}" ha sido creado exitosamente.`, 'success');
+                    if (createGroupModal) createGroupModal.classList.add('hidden');
+                } catch (error) {
+                    console.error('Error al crear grupo:', error);
+                    if (createGroupMessage) createGroupMessage.textContent = `Hubo un problema al crear el grupo. Por favor, inténtalo de nuevo.`;
+                    addNotification('Error al Crear Grupo', `Hubo un problema al crear el grupo.`, 'error');
+                }
+            });
+        }
+
+        if (uploadPicButton) {
+            uploadPicButton.addEventListener('click', () => {
+                if (profilePicUploadInput) profilePicUploadInput.click();
+            });
+        }
+
+        if (profilePicUploadInput) {
+            profilePicUploadInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) {
+                    return;
+                }
+
+                addNotification('Subiendo Imagen', 'Tu foto de perfil se está subiendo...', 'info');
+
+                try {
+                    const newProfilePicUrl = await uploadFileToCloudinary(file);
+                    const userDocRef = doc(db, `users`, currentUserId); // Corrected path
+                    await updateDoc(userDocRef, {
+                        profilePicUrl: newProfilePicUrl
+                    });
+                    if (profilePic) profilePic.src = newProfilePicUrl;
+                    userProfilePicUrl = newProfilePicUrl;
+                    addNotification('Éxito', 'Foto de perfil actualizada correctamente.', 'success');
+                } catch (error) {
+                    console.error('Error al subir la imagen:', error);
+                    addNotification('Error de Subida', `No se pudo subir la foto de perfil. Por favor, inténtalo de nuevo.`, 'error');
+                } finally {
+                    if (profilePicUploadInput) profilePicUploadInput.value = '';
+                }
+            });
+        }
+
+        if (attachMediaButton) {
+            attachMediaButton.addEventListener('click', () => {
+                if (chatMediaUploadInput) chatMediaUploadInput.click();
+            });
+        }
+
+        if (messageBoxOkButton) messageBoxOkButton.addEventListener('click', hideMessageBox);
+        if (emailSentOkButton) emailSentOkButton.addEventListener('click', hideEmailSentModal);
+
+        if (resendVerificationEmailSidebarButton) {
+            resendVerificationEmailSidebarButton.addEventListener('click', async () => {
+                const user = auth.currentUser;
+                if (!user) {
+                    addNotification('Error', 'No hay usuario autenticado para reenviar el email.', 'error');
+                    return;
+                }
+
+                if (resendCooldownTimer) {
+                    addNotification('Espera', `Ya has solicitado un email de verificación. Por favor, espera ${RESEND_COOLDOWN_SECONDS} segundos antes de intentar de nuevo.`, 'info');
+                    return;
+                }
+
+                // Start cooldown
+                resendVerificationEmailSidebarButton.disabled = true;
+                let timeLeft = RESEND_COOLDOWN_SECONDS;
+                resendVerificationEmailSidebarButton.textContent = `Reenviar Email (${timeLeft}s)`;
+
+                resendCooldownTimer = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft > 0) {
+                        if (resendVerificationEmailSidebarButton) resendVerificationEmailSidebarButton.textContent = `Reenviar Email (${timeLeft}s)`;
+                    } else {
+                        clearInterval(resendCooldownTimer);
+                        resendCooldownTimer = null;
+                        if (resendVerificationEmailSidebarButton) {
+                            resendVerificationEmailSidebarButton.textContent = `Reenviar Email de Verificación`;
+                            resendVerificationEmailSidebarButton.disabled = false;
+                        }
+                    }
+                }, 1000);
+
+                try {
+                    await sendEmailVerification(user);
+                    addNotification('Email Reenviado', 'Se ha reenviado el email de verificación. Revisa tu bandeja de entrada.', 'success');
+                } catch (error) {
+                    console.error('Error al reenviar email de verificación:', error);
+                    let errorMessage = `No se pudo reenviar el email de verificación. Por favor, inténtalo de nuevo más tarde.`;
+                    if (error.code === 'auth/too-many-requests') {
+                        errorMessage = 'Has solicitado demasiados emails de verificación. Por favor, espera un momento antes de intentarlo de nuevo.';
+                    }
+                    addNotification('Error al Reenviar Email', errorMessage, 'error');
+                    // Even on error, keep the cooldown to prevent rapid retries
+                }
+            });
+        }
+
+        if (forgotPasswordLink) {
+            forgotPasswordLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (forgotPasswordModal) forgotPasswordModal.classList.remove('hidden');
+                if (forgotPasswordMessage) forgotPasswordMessage.textContent = '';
+                if (forgotEmailInput) forgotEmailInput.value = '';
+            });
+        }
+
+        if (cancelForgotPasswordButton) {
+            cancelForgotPasswordButton.addEventListener('click', () => {
+                if (forgotPasswordModal) forgotPasswordModal.classList.add('hidden');
+            });
+        }
+
+        if (forgotPasswordForm) {
+            forgotPasswordForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const emailToReset = forgotEmailInput ? forgotEmailInput.value.trim() : '';
+                if (forgotPasswordMessage) forgotPasswordMessage.textContent = '';
+
+                try {
+                    await sendPasswordResetEmail(auth, emailToReset);
+                    addNotification('Email de Recuperación Enviado', `Se ha enviado un enlace de restablecimiento de contraseña a ${emailToReset}. Revisa tu bandeja de entrada.`, 'success');
+                    if (forgotPasswordModal) forgotPasswordModal.classList.add('hidden');
+                } catch (error) {
+                    console.error('Error al enviar email de recuperación:', error);
+                    let errorMessage = `Hubo un problema al enviar el email de recuperación. Asegúrate de que el correo sea correcto.`;
+                    switch (error.code) {
+                        case 'auth/invalid-email':
+                            errorMessage = 'El formato del correo electrónico es inválido.';
+                            break;
+                        case 'auth/user-not-found':
+                            errorMessage = 'No se encontró un usuario con este correo electrónico.';
+                            break;
+                        default:
+                            break;
+                    }
+                    if (forgotPasswordMessage) forgotPasswordMessage.textContent = errorMessage;
+                    addNotification('Error de Recuperación', errorMessage, 'error');
+                }
+            });
+        }
+
+        if (showNotificationsButton) showNotificationsButton.addEventListener('click', () => showNotificationsModal(null)); // Show all notifications
+        if (clearNotificationsButton) clearNotificationsButton.addEventListener('click', clearAllNotifications);
+        if (closeNotificationsModalButton) {
+            closeNotificationsModalButton.addEventListener('click', () => {
+                if (notificationsModal) notificationsModal.classList.add('hidden');
+            });
+        }
+
+        // New Event Listener for Friend Requests Button
+        if (showFriendRequestsButton) showFriendRequestsButton.addEventListener('click', () => showNotificationsModal('friendRequest'));
+
+        // Event listener for theme toggle button
+        if (themeToggleButton) {
+            themeToggleButton.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                // Save preference to localStorage
+                if (document.body.classList.contains('dark-mode')) {
+                    localStorage.setItem('theme', 'dark');
+                    themeToggleButton.innerHTML = '<i class="fas fa-moon mr-2"></i>Cambiar Tema';
+                } else {
+                    localStorage.setItem('theme', 'light');
+                    themeToggleButton.innerHTML = '<i class="fas fa-sun mr-2"></i>Cambiar Tema';
+                }
+            });
+        }
+
+
+        if (changeUsernameButton) {
+            changeUsernameButton.addEventListener('click', () => {
+                if (changeUsernameModal) changeUsernameModal.classList.remove('hidden');
+                if (changeUsernameMessage) changeUsernameMessage.textContent = '';
+                if (newUsernameInput) newUsernameInput.value = userDisplayName;
+            });
+        }
+
+        if (cancelChangeUsernameButton) {
+            cancelChangeUsernameButton.addEventListener('click', () => {
+                if (changeUsernameModal) changeUsernameModal.classList.add('hidden');
+            });
+        }
+
+        if (changeUsernameForm) {
+            changeUsernameForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const newUsername = newUsernameInput ? newUsernameInput.value.trim() : '';
+                if (changeUsernameMessage) changeUsernameMessage.textContent = '';
+
+                if (newUsername === '') {
+                    if (changeUsernameMessage) changeUsernameMessage.textContent = 'El nombre de usuario no puede estar vacío.';
+                    return;
+                }
+                if (newUsername === userDisplayName) {
+                    if (changeUsernameMessage) changeUsernameMessage.textContent = 'El nuevo nombre de usuario es el mismo que el actual.';
+                    return;
+                }
+
+                try {
+                    const usersRef = collection(db, `users`); // Corrected path
+                    const q = query(usersRef, where('username', '==', newUsername));
+                    const querySnapshot = await getDocs(q);
+
+                    if (!querySnapshot.empty && querySnapshot.docs[0].id !== currentUserId) {
+                        if (changeUsernameMessage) changeUsernameMessage.textContent = 'Este nombre de usuario ya está en uso. Por favor, elige otro.';
+                        return;
+                    }
+
+                    await updateProfile(auth.currentUser, { displayName: newUsername });
+
+                    const userDocRef = doc(db, `users`, currentUserId); // Corrected path
+                    await updateDoc(userDocRef, {
+                        username: newUsername
+                    });
+
+                    userDisplayName = newUsername;
+                    if (userDisplayNameElement) userDisplayNameElement.textContent = newUsername;
+                    addNotification('Nombre de Usuario Actualizado', `Tu nombre de usuario se ha cambiado a "${newUsername}" correctamente.`, 'success');
+                    if (changeUsernameModal) changeUsernameModal.classList.add('hidden');
+                } catch (error) {
+                    console.error('Error al cambiar nombre de usuario:', error);
+                    let errorMessage = `Hubo un problema al cambiar el nombre de usuario.`;
+                    if (error.code === 'permission-denied' || (error.message && error.message.includes('Missing or insufficient permissions'))) {
+                        errorMessage = 'No tienes permisos suficientes para cambiar el nombre de usuario. Asegúrate de que las reglas de seguridad de Firestore estén configuradas correctamente.';
+                    }
+                    if (changeUsernameMessage) changeUsernameMessage.textContent = errorMessage;
+                    addNotification('Error al Cambiar Nombre de Usuario', errorMessage, 'error');
+                }
+            });
+        }
+
+        if (mobileSidebarToggle) {
+            mobileSidebarToggle.addEventListener('click', () => {
+                if (sidebar) sidebar.classList.remove('-translate-x-full');
+                if (sidebarOverlay) sidebarOverlay.classList.remove('hidden');
+            });
+        }
+
+        if (closeSidebarButton) {
+            closeSidebarButton.addEventListener('click', () => {
+                if (sidebar) sidebar.classList.add('-translate-x-full');
+                if (sidebarOverlay) sidebarOverlay.classList.add('hidden');
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => {
+                if (sidebar) sidebar.classList.add('-translate-x-full');
+                if (sidebarOverlay) sidebarOverlay.classList.add('hidden');
+            });
+        }
+
+        // New Event Listeners for Group Management
+        if (addGroupMemberButton) {
+            addGroupMemberButton.addEventListener('click', () => {
+                if (!activeChat || activeChat.type !== 'group') {
+                    showMessageBox('Error', 'Selecciona un grupo para añadir miembros.');
+                    return;
+                }
+                if (activeChat.adminId !== currentUserId) {
+                    showMessageBox('Permiso Denegado', 'Solo el administrador del grupo puede añadir miembros.');
+                    return;
+                }
+                if (addGroupMemberModal) addGroupMemberModal.classList.remove('hidden');
+                if (addGroupMemberMessage) addGroupMemberMessage.textContent = '';
+                if (addGroupMemberInput) addGroupMemberInput.value = '';
+            });
+        }
+
+        if (cancelAddGroupMemberButton) {
+            cancelAddGroupMemberButton.addEventListener('click', () => {
+                if (addGroupMemberModal) addGroupMemberModal.classList.add('hidden');
+            });
+        }
+
+        if (addGroupMemberForm) {
+            addGroupMemberForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const memberIdentifier = addGroupMemberInput ? addGroupMemberInput.value.trim() : '';
+                if (memberIdentifier) {
+                    await addMemberToGroup(memberIdentifier);
+                } else {
+                    if (addGroupMemberMessage) addGroupMemberMessage.textContent = 'Por favor, introduce el correo electrónico o nombre de usuario del miembro.';
+                }
+            });
+        }
+
+        if (leaveGroupButton) leaveGroupButton.addEventListener('click', leaveGroup);
     </script>
 </body>
 </html>
