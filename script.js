@@ -159,7 +159,7 @@ const closeNotificationsModalButton = document.getElementById('close-notificatio
 const showFriendRequestsButton = document.getElementById('show-friend-requests-button'); // New DOM element
 
 const changeUsernameModal = document.getElementById('change-username-modal');
-const changeUsernameForm = document = document.getElementById('change-username-form');
+const changeUsernameForm = document.getElementById('change-username-form'); // Corrected line
 const newUsernameInput = document.getElementById('new-username-input');
 const cancelChangeUsernameButton = document.getElementById('cancel-change-username');
 const changeUsernameMessage = document.getElementById('change-username-message');
@@ -1259,7 +1259,7 @@ authForm.addEventListener('submit', async (e) => {
                 dateOfBirth: null,
                 age: null,
                 emailVerified: user.emailVerified
-            });
+            }, { merge: true });
             
         } catch (error) {
             console.error('Error al registrar:', error);
