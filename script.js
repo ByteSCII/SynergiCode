@@ -380,15 +380,20 @@ const renderedMessages = new Map();
  * @param {string} messageId - The Firestore document ID of the message.
  */
 function renderMessage(message, isCurrentUser, messageId) {
-    let messageElement = document.getElementById(`message-${messageId}`);
+    let messageElement = renderedMessages.get(messageId); // Get from map
 
-    // If message element already exists, update it (e.g., if content or media changes)
-    // For simplicity, we'll just remove and re-add if it's an update scenario for now.
     if (messageElement) {
-        messageElement.remove();
-        renderedMessages.delete(messageId); // Remove from map as well
+        // Message already exists, only update dynamic parts like timestamp if needed.
+        const messageTime = messageElement.querySelector('.text-xs.mt-1');
+        if (messageTime) {
+            const date = message.timestamp ? new Date(message.timestamp.toDate()) : new Date();
+            messageTime.textContent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        console.log(`[renderMessage] Updated existing message ID: ${messageId}`);
+        return; // Exit, no need to create/append
     }
 
+    // If messageElement does not exist, create a new one
     messageElement = document.createElement('div');
     messageElement.id = `message-${messageId}`; // Assign a unique ID
     messageElement.classList.add('flex', 'mb-2', isCurrentUser ? 'justify-end' : 'justify-start');
@@ -445,6 +450,7 @@ function renderMessage(message, isCurrentUser, messageId) {
     chatMessagesContainer.appendChild(messageElement); // Append the wrapper element
     renderedMessages.set(messageId, messageElement); // Store the rendered element
     chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
+    console.log(`[renderMessage] Added new message ID: ${messageId}`);
 }
 
 /**
@@ -554,14 +560,8 @@ async function displayChatView(chatInfo) {
                 // Render new message
                 renderMessage({ ...messageData, senderName }, isCurrentUserMessage, messageId);
             } else if (docChange.type === 'modified') {
-                // Update existing message (if message content can change)
-                // For chat messages, content usually doesn't change, but media might load.
-                // For simplicity, we'll remove and re-add to ensure updates are reflected.
-                const existingElement = renderedMessages.get(messageId);
-                if (existingElement) {
-                    existingElement.remove();
-                    renderedMessages.delete(messageId);
-                }
+                // Update existing message (e.g., timestamp resolves)
+                // The renderMessage function is now smart enough to update in place.
                 renderMessage({ ...messageData, senderName }, isCurrentUserMessage, messageId);
             } else if (docChange.type === 'removed') {
                 // Remove message
@@ -569,6 +569,7 @@ async function displayChatView(chatInfo) {
                 if (existingElement) {
                     existingElement.remove();
                     renderedMessages.delete(messageId);
+                    console.log(`[displayChatView - Messages] Removed message ID: ${messageId}`);
                 }
             }
         });
@@ -1036,9 +1037,9 @@ authForm.addEventListener('submit', async (e) => {
                 profilePicUrl: userProfilePicUrl,
                 lastOnline: serverTimestamp(),
                 contacts: [],
-                phoneNumber: phoneNumber || null,
-                dateOfBirth: dateOfBirth || null,
-                age: isNaN(age) ? null : age,
+                phoneNumber: null,
+                dateOfBirth: null,
+                age: null,
                 emailVerified: user.emailVerified
             });
             
