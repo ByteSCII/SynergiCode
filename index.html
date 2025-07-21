@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatApp</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* CSS Variables for Theming */
+        :root {
+            --color-primary: #4CAF50;
+            --color-primary-dark: #43A047;
+            --color-secondary-blue: #2196F3;
+            --color-secondary-blue-dark: #1976D2;
+            --color-darkblue: #3B3B6B;
+            --color-background: #f0f2f5;
+            --color-surface: #ffffff;
+            --color-text-default: #374151; /* gray-800 */
+            --color-text-secondary: #6B7280; /* gray-500 */
+            --color-border: #E5E7EB; /* gray-200 */
+            --color-input-border: #D1D5DB; /* gray-300 */
+            --color-message-bg-self: var(--color-secondary-blue);
+            --color-message-text-self: #ffffff;
+            --color-message-bg-other: #e5e7eb; /* gray-200 */
+            --color-message-text-other: #374151; /* gray-800 */
+            --color-green-status: #22C55E; /* green-500 */
+            --color-gray-status: #9CA3AF; /* gray-400 */
+            --color-red-error: #EF4444; /* red-600 */
+            --color-green-success: #22C55E; /* green-600 */
+            --color-blue-info: #3B82F6; /* blue-500 */
+        }
+
+        .dark-mode {
+            --color-primary: #66BB6A; /* Lighter green for dark mode */
+            --color-primary-dark: #81C784;
+            --color-secondary-blue: #64B5F6; /* Lighter blue for dark mode */
+            --color-secondary-blue-dark: #90CAF9;
+            --color-darkblue: #B0BEC5; /* Lighter text for dark mode */
+            --color-background: #000000; /* Pure black background */
+            --color-surface: #0a0a0a; /* Very dark surface for cards/panels */
+            --color-text-default: #E2E8F0; /* Light gray text */
+            --color-text-secondary: #A0AEC0; /* Lighter gray secondary text */
+            --color-border: #333333; /* Darker border */
+            --color-input-border: #444444; /* Darker input border */
+            --color-message-bg-self: var(--color-secondary-blue);
+            --color-message-text-self: #ffffff;
+            --color-message-bg-other: #333333; /* Darker gray for other messages */
+            --color-message-text-other: #E2E8F0; /* Light text for other messages */
+            --color-green-status: #4CAF50; /* Adjust for dark mode visibility */
+            --color-gray-status: #6B7280; /* Adjust for dark mode visibility */
+            --color-red-error: #F87171; /* Adjust for dark mode visibility */
+            --color-green-success: #4CAF50; /* Adjust for dark mode visibility */
+            --color-blue-info: #60A5FA; /* Adjust for dark mode visibility */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text-default);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Applying CSS variables to Tailwind-like classes */
+        .bg-custom-primary { background-color: var(--color-primary); }
+        .hover\:bg-custom-primary-dark:hover { background-color: var(--color-primary-dark); }
+        .focus\:ring-custom-primary { --tw-ring-color: var(--color-primary); }
+
+        .text-custom-darkblue { color: var(--color-darkblue); }
+        .bg-custom-secondary-blue { background-color: var(--color-secondary-blue); }
+        .hover\:bg-custom-secondary-blue-dark:hover { background-color: var(--color-secondary-blue-dark); }
+        .focus\:ring-custom-secondary-blue { --tw-ring-color: var(--color-secondary-blue); }
+
+        /* General element styling based on variables */
+        .bg-white { background-color: var(--color-surface); }
+        .bg-gray-100 { background-color: var(--color-background); } /* Main app background */
+        .bg-gray-50 { background-color: var(--color-background); } /* Chat area, lists background */
+        .bg-gray-200 { background-color: var(--color-message-bg-other); color: var(--color-message-text-other); } /* Other messages, general gray buttons */
+        .hover\:bg-gray-200:hover { background-color: var(--color-border); } /* Hover for lists */
+        .hover\:bg-gray-300:hover { background-color: var(--color-border); } /* Hover for buttons */
+
+        .text-gray-700 { color: var(--color-text-default); }
+        .text-gray-800 { color: var(--color-text-default); }
+        .text-gray-500 { color: var(--color-text-secondary); }
+        .text-gray-600 { color: var(--color-text-secondary); }
+
+        .border-gray-200 { border-color: var(--color-border); }
+        .border-gray-300 { border-color: var(--color-input-border); }
+
+        .text-red-500 { color: var(--color-red-error); }
+        .hover\:text-red-700:hover { color: var(--color-red-error); }
+        .text-red-600 { color: var(--color-red-error); }
+        .text-green-600 { color: var(--color-green-success); }
+        .text-blue-200 { color: var(--color-text-secondary); } /* For sender name in self message */
+        .text-blue-300 { color: var(--color-text-secondary); } /* For timestamp in self message */
+        .bg-green-500 { background-color: var(--color-green-status); }
+        .bg-gray-400 { background-color: var(--color-gray-status); }
+        .bg-green-50 { background-color: var(--color-green-success); }
+        .bg-red-50 { background-color: var(--color-red-error); }
+        .bg-blue-50 { background-color: var(--color-blue-info); }
+
+        /* Custom scrollbar for chat messages */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--color-background);
+            border-radius: 10px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--color-text-secondary);
+            border-radius: 10px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--color-darkblue);
+        }
+        /* Custom modal styles */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: var(--color-surface);
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+            color: var(--color-text-default);
+        }
+        /* Hidden file input */
+        .hidden-file-input {
+            display: none;
+        }
+    </style>
+</head>
+<body class="h-screen flex items-center justify-center">
+
+    <!-- Login/Registration Section -->
+    <div id="auth-section" class="bg-white p-8 rounded-xl shadow-xl w-full max-w-md">
+        <div class="flex justify-center mb-6">
+            <img src="https://i.imgur.com/CJHtqu5.jpeg" alt="SynergiCode Logo" class="w-48 h-auto">
+        </div>
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6" id="auth-title">Iniciar Sesión</h2>
+        <form id="auth-form" class="space-y-4">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+                <input type="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
+                <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
+            </div>
+            <!-- New fields for registration -->
+            <div id="register-fields" class="space-y-4 hidden">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Nombre de Usuario (opcional)</label>
+                    <input type="text" id="username" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm">
+                </div>
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-gray-700">Número de Teléfono</label>
+                    <input type="tel" id="phone" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" placeholder="+58XXXXXXXXX" pattern="^\+\d{1,3}\d{7,15}$" title="Formato: +CódigoDePaísNúmero (ej. +584123456789)">
+                </div>
+                <div>
+                    <label for="dob" class="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
+                    <input type="date" id="dob" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm">
+                </div>
+                <div>
+                    <label for="age" class="block text-sm font-medium text-gray-700">Edad</label>
+                    <input type="number" id="age" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" min="0" max="120">
+                </div>
+            </div>
+            <button type="submit" id="auth-button" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-custom-primary hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
+                Iniciar Sesión
+            </button>
+        </form>
+        <p class="mt-4 text-center text-sm text-gray-600">
+            ¿No tienes una cuenta? <button id="toggle-auth" class="font-medium text-custom-secondary-blue hover:text-custom-secondary-blue-dark">Regístrate</button>
+        </p>
+        <p class="mt-2 text-center text-sm">
+            <button id="forgot-password-link" class="font-medium text-custom-secondary-blue hover:text-custom-secondary-blue-dark">¿Olvidaste tu contraseña?</button>
+        </p>
+        <div id="auth-message" class="mt-4 text-center text-sm text-red-600"></div>
+    </div>
+
+    <!-- Main Chat Application Section -->
+    <div id="app-section" class="hidden h-screen w-full flex flex-col md:flex-row bg-gray-100 rounded-xl shadow-xl overflow-hidden">
+        <!-- Sidebar -->
+        <div id="sidebar" class="w-full max-w-xs md:w-1/4 bg-custom-surface border-r border-gray-200 flex-col md:flex fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40">
+            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-custom-darkblue dark:text-white">ChatApp</h1> <!-- Added dark:text-white -->
+                <button id="logout-button" class="text-red-500 hover:text-red-700 text-sm font-medium hidden md:block">
+                    <i class="fas fa-sign-out-alt mr-1"></i>Salir
+                </button>
+                <button id="close-sidebar-button" class="md:hidden text-gray-700 hover:text-gray-900 p-2 rounded-md">
+                    <i class="fas fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-4 flex flex-col items-center border-b border-gray-200">
+                <div class="mb-4">
+                    <img src="https://i.imgur.com/CJHtqu5.jpeg" alt="SynergiCode Logo" class="w-24 h-auto">
+                </div>
+                <div class="relative">
+                    <img id="profile-pic" src="https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF" alt="Foto de Perfil" class="w-24 h-24 rounded-full object-cover border-2 border-custom-secondary-blue mb-2">
+                    <input type="file" id="profile-pic-upload" accept="image/*" class="hidden-file-input">
+                    <button id="upload-pic-button" class="absolute bottom-0 right-0 bg-custom-secondary-blue text-white rounded-full p-2 text-xs shadow-md hover:bg-custom-secondary-blue-dark transition-colors duration-200">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+                <p id="user-display-username" class="text-xl font-bold text-custom-darkblue"></p> <!-- Removed mt-2, will be handled by parent flexbox -->
+                
+                <!-- Email Verification Status in Sidebar -->
+                <div id="email-verification-status-sidebar" class="text-xs text-gray-500 mt-1 text-center">
+                    <span id="email-verified-text"></span>
+                    <button id="resend-verification-email-sidebar" class="hidden mt-1 text-custom-secondary-blue hover:text-custom-secondary-blue-dark font-medium">
+                        Reenviar Email de Verificación
+                    </button>
+                </div>
+
+                <p id="user-phone-display" class="text-xs text-gray-500"></p>
+                <p id="user-dob-display" class="text-xs text-gray-500"></p>
+                <p id="user-age-display" class="text-xs text-gray-500"></p>
+                <button id="change-username-button" class="mt-4 w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                    <i class="fas fa-user-edit mr-2"></i>Cambiar Nombre de Usuario
+                </button>
+                <button id="theme-toggle-button" class="mt-2 w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                    <i class="fas fa-sun mr-2"></i>Cambiar Tema
+                </button>
+            </div>
+            <div class="p-4 border-t border-gray-200 mt-auto">
+                <button id="add-contact-button" class="w-full bg-custom-primary text-white py-2 px-4 rounded-md hover:bg-custom-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
+                    <i class="fas fa-user-plus mr-2"></i>Añadir Contacto
+                </button>
+                <button id="create-group-button" class="w-full mt-2 bg-custom-primary text-white py-2 px-4 rounded-md hover:bg-custom-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
+                    <i class="fas fa-plus-circle mr-2"></i>Crear Grupo
+                </button>
+                <button id="mobile-logout-button" class="w-full mt-2 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 md:hidden">
+                    <i class="fas fa-sign-out-alt mr-1"></i>Salir
+                </button>
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-30"></div>
+
+        <div class="w-full md:w-3/4 flex flex-col">
+            <div class="md:hidden p-2 bg-custom-surface border-b border-gray-200 flex justify-between items-center">
+                <button id="mobile-sidebar-toggle" class="p-2 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <img src="https://i.imgur.com/CJHtqu5.jpeg" alt="SynergiCode Logo" class="w-12 h-auto">
+            </div>
+
+            <nav class="bg-custom-surface p-4 border-b border-gray-200 flex flex-wrap items-center justify-around">
+                <button id="show-contacts" class="flex-1 text-center p-3 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200 mx-1">
+                    <i class="fas fa-address-book mr-2"></i>Contactos
+                </button>
+                <button id="show-groups" class="flex-1 text-center p-3 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200 mx-1">
+                    <i class="fas fa-users mr-2"></i>Grupos de Trabajo
+                </button>
+                <button id="show-notifications-button" class="flex-1 text-center p-3 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200 relative mx-1">
+                    <i class="fas fa-bell mr-2"></i>Notificaciones
+                    <span id="notification-badge" class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                </button>
+                <button id="show-friend-requests-button" class="flex-1 text-center p-3 rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 transition-colors duration-200 relative mx-1">
+                    <i class="fas fa-user-friends mr-2"></i>Solicitudes
+                    </button>
+            </nav>
+
+            <!-- Header for current chat -->
+            <div id="chat-header" class="bg-custom-surface p-4 border-b border-gray-200 flex items-center justify-between">
+                <div class="flex items-center">
+                    <img id="current-chat-pic" src="https://placehold.co/50x50/E2E8F0/4A5568?text=Chat" alt="Chat Pic" class="w-12 h-12 rounded-full object-cover mr-3">
+                    <div>
+                        <h2 id="current-chat-name" class="text-xl font-semibold text-gray-800">Selecciona un chat</h2>
+                        <p id="current-chat-status" class="text-sm text-gray-500"></p>
+                    </div>
+                </div>
+                <!-- Botones de gestión de grupo (añadidos aquí) -->
+                <div class="flex space-x-2 ml-auto">
+                    <button id="add-group-member-button" class="hidden px-3 py-1 bg-custom-primary text-white text-sm rounded-md hover:bg-custom-primary-dark transition-colors">
+                        Añadir Miembro
+                    </button>
+                    <button id="leave-group-button" class="hidden px-3 py-1 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors">
+                        Salir del Grupo
+                    </button>
+                </div>
+            </div>
+
+            <div id="chat-messages-container" class="flex-grow p-4 overflow-y-auto chat-messages bg-gray-50">
+                <!-- Messages will be loaded here -->
+            </div>
+
+            <div id="message-input-area" class="bg-custom-surface p-4 border-t border-gray-200 flex items-center hidden">
+                <input type="file" id="chat-media-upload" accept="image/*,video/*" class="hidden-file-input">
+                <button id="attach-media-button" class="mr-3 bg-gray-200 text-gray-700 p-3 rounded-full hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <input type="text" id="message-input" class="flex-grow px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue" placeholder="Escribe un mensaje...">
+                <button id="send-message-button" class="ml-3 bg-custom-primary text-white p-3 rounded-full hover:bg-custom-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+
+            <div id="no-chat-selected" class="flex-grow flex items-center justify-center text-gray-500 text-lg">
+                <p>Selecciona un contacto o grupo para empezar a chatear.</p>
+            </div>
+
+            <div id="contacts-list-view" class="flex-grow p-4 overflow-y-auto bg-gray-50 w-full">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">Mis Contactos</h3>
+                <ul id="contacts-list" class="space-y-2">
+                    <!-- Contacts will be loaded here -->
+                </ul>
+                <p id="no-contacts-message" class="text-center text-gray-500 mt-4 hidden">No tienes contactos. Añade uno para empezar a chatear.</p>
+            </div>
+
+            <div id="groups-list-view" class="flex-grow p-4 overflow-y-auto bg-gray-50 w-full hidden">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">Mis Grupos de Trabajo</h3>
+                <ul id="groups-list" class="space-y-2">
+                    <!-- Groups will be loaded here -->
+                </ul>
+                <p id="no-groups-message" class="text-center text-gray-500 mt-4 hidden">No tienes grupos. Crea uno para empezar a colaborar.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Add Contact Modal -->
+    <div id="add-contact-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
+        <div class="modal-content p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Añadir Contacto</h3>
+            <form id="add-contact-form" class="space-y-4">
+                <div>
+                    <label for="contact-input" class="block text-sm font-medium text-gray-700">Correo Electrónico o Nombre de Usuario</label>
+                    <input type="text" id="contact-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-add-contact" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">Enviar Solicitud</button>
+                </div>
+                <p id="add-contact-message" class="text-sm text-red-600"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div id="create-group-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
+        <div class="modal-content p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Crear Nuevo Grupo de Trabajo</h3>
+            <form id="create-group-form" class="space-y-4">
+                <div>
+                    <label for="group-name" class="block text-sm font-medium text-gray-700">Nombre del Grupo</label>
+                    <input type="text" id="group-name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
+                </div>
+                <div>
+                    <label for="group-description" class="block text-sm font-medium text-gray-700">Descripción (Opcional)</label>
+                    <textarea id="group-description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm"></textarea>
+                </div>
+                <div>
+                    <label for="group-photo-upload" class="block text-sm font-medium text-gray-700">Foto del Grupo (Opcional)</label>
+                    <div class="mt-1 flex items-center space-x-4">
+                        <img id="group-photo-preview" src="https://placehold.co/80x80/E2E8F0/4A5568?text=Grupo" alt="Group Photo Preview" class="w-20 h-20 rounded-full object-cover border-2 border-gray-300">
+                        <input type="file" id="group-photo-upload" accept="image/*" class="hidden-file-input">
+                        <button type="button" id="upload-group-pic-button" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                            <i class="fas fa-upload mr-2"></i>Subir Foto
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Miembros (selecciona contactos)</label>
+                    <div id="group-member-selection" class="mt-1 border border-gray-300 rounded-md p-2 max-h-40 overflow-y-auto space-y-1">
+                        <p id="no-contacts-for-group" class="text-sm text-gray-500 hidden">Añade contactos para poder agregarlos a un grupo.</p>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-create-group" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">Crear Grupo</button>
+                </div>
+                <p id="create-group-message" class="text-sm text-red-600"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Añadir Miembro al Grupo -->
+    <div id="add-group-member-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h3 class="text-lg font-semibold mb-4">Añadir Miembro al Grupo</h3>
+            <form id="add-group-member-form">
+                <div class="mb-4">
+                    <label for="add-group-member-input" class="block text-sm font-medium text-gray-700 mb-1">Email o Nombre de Usuario</label>
+                    <input type="text" id="add-group-member-input" class="w-full p-2 border border-gray-300 rounded-md focus:ring-custom-primary focus:border-custom-primary">
+                </div>
+                <p id="add-group-member-message" class="text-red-500 text-sm mb-4"></p>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-add-group-member" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark transition-colors">Añadir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h3 id="confirm-modal-title" class="text-lg font-semibold mb-4">Confirmación</h3>
+            <p id="confirm-modal-content" class="text-gray-700 mb-6"></p>
+            <div class="flex justify-end space-x-3">
+                <button id="confirm-modal-cancel" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">Cancelar</button>
+                <button id="confirm-modal-ok" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Box for Alerts (kept for critical system messages) -->
+    <div id="message-box" class="hidden fixed inset-0 flex items-center justify-center z-[999] modal-overlay">
+        <div class="modal-content p-6 w-full max-w-sm text-center">
+            <h3 id="message-box-title" class="text-xl font-bold text-gray-800 mb-4"></h3>
+            <p id="message-box-content" class="text-gray-700 mb-6"></p>
+            <button id="message-box-ok" class="px-6 py-2 bg-custom-secondary-blue text-white rounded-md hover:bg-custom-secondary-blue-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">OK</button>
+        </div>
+    </div>
+
+    <!-- Email Sent Modal (kept for registration flow) -->
+    <div id="email-sent-modal" class="hidden fixed inset-0 flex items-center justify-center z-[999] modal-overlay">
+        <div class="modal-content p-8 w-full max-w-sm text-center">
+            <div class="text-custom-primary text-6xl mb-4">
+                <i class="fas fa-envelope-circle-check"></i> </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-3">¡Email Enviado!</h3>
+            <p class="text-gray-700 mb-6">Por favor, revisa tu bandeja de entrada y haz clic en el enlace de verificación para activar tu cuenta.</p>
+            <button id="email-sent-ok" class="px-6 py-2 bg-custom-secondary-blue text-white rounded-md hover:bg-custom-secondary-blue-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Entendido</button>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgot-password-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
+        <div class="modal-content p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Recuperar Contraseña</h3>
+            <form id="forgot-password-form" class="space-y-4">
+                <div>
+                    <label for="forgot-email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+                    <input type="email" id="forgot-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-forgot-password" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">Enviar Enlace</button>
+                </div>
+                <p id="forgot-password-message" class="text-sm text-red-600"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div id="notifications-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
+        <div class="modal-content p-6 w-full max-w-lg">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Notificaciones</h3>
+            <ul id="notifications-list" class="space-y-3 max-h-80 overflow-y-auto mb-4">
+                <!-- Notifications will be loaded here -->
+            </ul>
+            <p id="no-notifications-message" class="text-center text-gray-500 hidden">No tienes notificaciones nuevas.</p>
+            <div class="flex justify-end space-x-3">
+                <button type="button" id="clear-notifications-button" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Borrar Todas</button>
+                <button type="button" id="close-notifications-modal" class="px-4 py-2 bg-custom-secondary-blue text-white rounded-md hover:bg-custom-secondary-blue-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Username Modal -->
+    <div id="change-username-modal" class="hidden fixed inset-0 flex items-center justify-center z-50 modal-overlay">
+        <div class="modal-content p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Cambiar Nombre de Usuario</h3>
+            <form id="change-username-form" class="space-y-4">
+                <div>
+                    <label for="new-username-input" class="block text-sm font-medium text-gray-700">Nuevo Nombre de Usuario</label>
+                    <input type="text" id="new-username-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-custom-secondary-blue focus:border-custom-secondary-blue sm:text-sm" required>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-change-username" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-secondary-blue">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-custom-primary text-white rounded-md hover:bg-custom-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-primary">Guardar</button>
+                </div>
+                <p id="change-username-message" class="text-sm text-red-600"></p>
+            </form>
+        </div>
+    </div>
+
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
