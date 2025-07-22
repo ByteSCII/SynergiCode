@@ -617,12 +617,7 @@
             arrayUnion, // Import arrayUnion
             arrayRemove // Import arrayRemove
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import {
-            getStorage,
-            ref,
-            uploadBytes,
-            getDownloadURL
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+        // Removed Firebase Storage import as we are using Cloudinary
 
         // --- Firebase Configuration ---
         const firebaseConfig = {
@@ -635,12 +630,15 @@
             measurementId: "G-Y0CDV2S6XB"
         };
 
+        // --- Cloudinary Configuration ---
+        const CLOUDINARY_CLOUD_NAME = 'dea8gaaek'; // Your Cloudinary Cloud Name
+        const CLOUDINARY_UPLOAD_PRESET = 'SynergiCode'; // Your Cloudinary Upload Preset
+
         // --- Initialize Firebase Services IMMEDIATELY ---
-        // These variables are now guaranteed to be defined when the script runs.
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const storage = getStorage(app);
+        // Removed storage initialization as we are using Cloudinary
         console.log("Firebase initialized successfully with provided config.");
 
 
@@ -664,7 +662,6 @@
 
 
         // --- DOM Elements ---
-        // Es crucial que estos IDs existan en tu archivo HTML.
         const authSection = document.getElementById('auth-section');
         const appSection = document.getElementById('app-section');
         const authForm = document.getElementById('auth-form');
@@ -686,7 +683,7 @@
         const userDobDisplay = document.getElementById('user-dob-display');
         const userAgeDisplay = document.getElementById('user-age-display');
         const profilePicElement = document.getElementById('profile-pic');
-        const profilePicUploadInput = document.getElementById('profile-pic-upload');
+        const profilePicUploadInput = document.getElementById('profile-pic-upload'); // Corrected line
         const uploadPicButton = document.getElementById('upload-pic-button');
         const emailVerificationStatusSidebar = document.getElementById('email-verification-status-sidebar');
         const emailVerifiedText = document.getElementById('email-verified-text');
@@ -858,10 +855,52 @@
             notificationsModal.classList.add('hidden');
         });
 
+        // --- Cloudinary Upload Function ---
+        async function uploadImageToCloudinary(file) {
+            if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+                console.error("Cloudinary configuration missing:", { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET });
+                throw new Error("Cloudinary configuration missing. Please set CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET.");
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+            const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+            console.log("Attempting Cloudinary upload to:", uploadUrl);
+            console.log("Using upload preset:", CLOUDINARY_UPLOAD_PRESET);
+            console.log("File name:", file.name, "File type:", file.type, "File size:", file.size);
+
+
+            try {
+                const response = await fetch(uploadUrl, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Cloudinary API response error:", errorData);
+                    if (errorData.error && errorData.error.message === "Unknown API key ") {
+                        throw new Error(`Cloudinary upload failed: Unknown API key. Please check your Cloudinary Cloud Name and ensure your Upload Preset '${CLOUDINARY_UPLOAD_PRESET}' is correctly configured and active in your Cloudinary dashboard.`);
+                    }
+                    throw new Error(`Cloudinary upload failed: ${errorData.error ? errorData.error.message : response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log("Cloudinary upload successful:", data);
+                return data.secure_url; // Return the secure URL of the uploaded image
+            } catch (error) {
+                console.error("Error uploading to Cloudinary:", error);
+                throw error; // Re-throw to be caught by the calling function
+            }
+        }
+
+
         // --- Auth State Listener ---
         document.addEventListener('DOMContentLoaded', () => {
             // Check if Firebase services were successfully initialized
-            if (!auth || !db || !storage) {
+            if (!auth || !db) { // Removed storage check
                 console.error("Firebase services failed to initialize. Auth state listener will not run.");
                 return;
             }
@@ -1101,9 +1140,7 @@
             }
 
             try {
-                const storageRef = ref(storage, `profile_pics/${currentUserId}/${file.name}`);
-                await uploadBytes(storageRef, file);
-                const photoURL = await getDownloadURL(storageRef);
+                const photoURL = await uploadImageToCloudinary(file);
 
                 await updateDoc(doc(db, "users", currentUserId), {
                     profilePicUrl: photoURL
@@ -1320,204 +1357,241 @@
 
         showContactsButton.addEventListener('click', () => showView('contacts-list-view'));
         showGroupsButton.addEventListener('click', () => showView('groups-list-view'));
-        showNotificationsButton.addEventListener('click', displayNotifications);
+        showNotificationsButton.addEventListener('click', () => {
+            showView('contacts-list-view'); // Default to contacts view when showing notifications modal
+            displayNotifications();
+        });
         showFriendRequestsButton.addEventListener('click', () => showView('friend-requests-list-view')); // New event listener
 
-        // --- Contact Management ---
 
-        // Listen for accepted contacts
+        // --- Chat Functions ---
+        async function loadMessages(chatType, chatId) {
+            if (unsubscribeMessages) {
+                unsubscribeMessages(); // Detach previous listener
+            }
+
+            chatMessagesContainer.innerHTML = ''; // Clear previous messages
+            noChatSelected.classList.add('hidden');
+            chatMessagesContainer.classList.remove('hidden');
+            messageInputArea.classList.remove('hidden');
+
+            const messagesRef = collection(db, "messages");
+            let q;
+
+            if (chatType === 'contact') {
+                // For direct messages, query messages where senderId and receiverId match either way
+                q = query(messagesRef,
+                    where("type", "==", "private"),
+                    where("participants", "array-contains-any", [currentUserId, chatId]),
+                    orderBy("timestamp", "asc")
+                );
+            } else if (chatType === 'group') {
+                q = query(messagesRef,
+                    where("type", "==", "group"),
+                    where("groupId", "==", chatId),
+                    orderBy("timestamp", "asc")
+                );
+            } else {
+                console.error("Tipo de chat no válido:", chatType);
+                return;
+            }
+
+            unsubscribeMessages = onSnapshot(q, async (snapshot) => {
+                chatMessagesContainer.innerHTML = ''; // Clear messages before re-rendering
+                const messages = [];
+                for (const docSnapshot of snapshot.docs) {
+                    const messageData = docSnapshot.data();
+                    let senderInfo = { username: "Desconocido", profilePicUrl: "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF" };
+                    if (messageData.senderId) {
+                        senderInfo = await getUserInfo(messageData.senderId);
+                    }
+                    messages.push({ id: docSnapshot.id, ...messageData, senderInfo });
+                }
+                displayMessages(messages);
+                chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
+            }, (error) => {
+                console.error("Error al escuchar mensajes:", error);
+                addNotification('Error de Chat', 'No se pudieron cargar los mensajes.', 'error');
+            });
+        }
+
+        const userInfoCache = {}; // Cache for user info
+
+        async function getUserInfo(uid) {
+            if (userInfoCache[uid]) {
+                return userInfoCache[uid];
+            }
+            try {
+                const userDocRef = doc(db, "users", uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    const info = {
+                        username: userData.username || userData.email.split('@')[0],
+                        profilePicUrl: userData.profilePicUrl || "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF"
+                    };
+                    userInfoCache[uid] = info; // Cache the result
+                    return info;
+                }
+            } catch (error) {
+                console.error("Error getting user info:", error);
+            }
+            return null; // User not found or error
+        }
+
+        function displayMessages(messages) {
+            messages.forEach(message => {
+                const isSelf = message.senderId === currentUserId;
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message-container ${isSelf ? 'self' : 'other'}`;
+
+                let mediaContent = '';
+                if (message.mediaUrl) {
+                    if (message.mediaType && message.mediaType.startsWith('image/')) {
+                        mediaContent = `<img src="${message.mediaUrl}" alt="Imagen enviada" class="max-w-xs rounded-lg object-cover mt-2">`;
+                    } else if (message.mediaType && message.mediaType.startsWith('video/')) {
+                        mediaContent = `<video controls src="${message.mediaUrl}" class="max-w-xs rounded-lg object-cover mt-2"></video>`;
+                    }
+                }
+
+                messageDiv.innerHTML = `
+                    <img src="${message.senderInfo.profilePicUrl}" alt="${message.senderInfo.username}" class="message-avatar">
+                    <div class="message-bubble ${isSelf ? 'self' : 'other'}">
+                        <div class="message-sender">${isSelf ? 'Tú' : message.senderInfo.username}</div>
+                        <div class="message-content">${message.text || ''}</div>
+                        ${mediaContent}
+                        <div class="message-timestamp">${new Date(message.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                    </div>
+                `;
+                chatMessagesContainer.appendChild(messageDiv);
+            });
+        }
+
+        sendMessageButton.addEventListener('click', async () => {
+            const messageText = messageInput.value.trim();
+            const mediaFile = chatMediaUploadInput.files[0];
+
+            if (!activeChat) {
+                showMessageBox('Error', 'Por favor, selecciona un chat para enviar un mensaje.');
+                return;
+            }
+
+            if (!messageText && !mediaFile) {
+                showMessageBox('Advertencia', 'No puedes enviar un mensaje vacío.');
+                return;
+            }
+
+            let mediaUrl = null;
+            let mediaType = null;
+
+            if (mediaFile) {
+                if (file.size > 10 * 1024 * 1024) { // 10MB limit for media
+                    addNotification('Error de Subida', 'El archivo multimedia es demasiado grande (máximo 10MB).', 'error');
+                    return;
+                }
+                try {
+                    mediaUrl = await uploadImageToCloudinary(mediaFile); // Use the same function for images/videos
+                    mediaType = mediaFile.type;
+                } catch (error) {
+                    console.error("Error al subir archivo multimedia:", error);
+                    addNotification('Error de Subida', 'Hubo un error al subir el archivo multimedia.', 'error');
+                    return;
+                }
+            }
+
+            const messageData = {
+                senderId: currentUserId,
+                text: messageText,
+                timestamp: serverTimestamp(),
+                mediaUrl: mediaUrl,
+                mediaType: mediaType
+            };
+
+            if (activeChat.type === 'contact') {
+                messageData.type = 'private';
+                messageData.receiverId = activeChat.id;
+                messageData.participants = [currentUserId, activeChat.id]; // Store participants for easy querying
+            } else if (activeChat.type === 'group') {
+                messageData.type = 'group';
+                messageData.groupId = activeChat.id;
+            }
+
+            try {
+                await addDoc(collection(db, "messages"), messageData);
+                messageInput.value = ''; // Clear input
+                chatMediaUploadInput.value = ''; // Clear file input
+                addNotification('Mensaje Enviado', 'Tu mensaje ha sido enviado.', 'success');
+            } catch (error) {
+                console.error("Error al enviar mensaje:", error);
+                addNotification('Error de Envío', 'No se pudo enviar el mensaje.', 'error');
+            }
+        });
+
+        // Event listener for attaching media
+        attachMediaButton.addEventListener('click', () => {
+            chatMediaUploadInput.click();
+        });
+
+        // Display selected file name next to input (optional, for user feedback)
+        chatMediaUploadInput.addEventListener('change', () => {
+            if (chatMediaUploadInput.files.length > 0) {
+                // You might want to display the file name somewhere, e.g., next to the input field
+                // For now, just a console log
+                console.log("Archivo seleccionado:", chatMediaUploadInput.files[0].name);
+                addNotification('Archivo Seleccionado', `Archivo: ${chatMediaUploadInput.files[0].name}`, 'info');
+            }
+        });
+
+
+        // --- Contacts Management ---
         async function listenForContacts(userId) {
-            if (unsubscribeContacts) unsubscribeContacts(); // Unsubscribe from previous listener
-
             const userDocRef = doc(db, "users", userId);
-
             unsubscribeContacts = onSnapshot(userDocRef, async (docSnap) => {
                 if (docSnap.exists()) {
                     const userData = docSnap.data();
-                    const contactUids = userData.contacts || [];
-                    contacts = []; // Clear current contacts list
+                    const contactIds = userData.contacts || [];
+                    const friendRequestsReceivedIds = (userData.friendRequestsReceived || []).map(req => req.senderId);
 
-                    if (contactUids.length > 0) {
-                        const contactPromises = contactUids.map(uid => getDoc(doc(db, "users", uid)));
-                        const contactSnaps = await Promise.all(contactPromises);
-
-                        contactsList.innerHTML = ''; // Clear existing display
-                        contactSnaps.forEach(contactSnap => {
-                            if (contactSnap.exists()) {
-                                const contactData = contactSnap.data();
-                                const contact = {
-                                    id: contactSnap.id,
-                                    email: contactData.email,
-                                    username: contactData.username,
-                                    profilePicUrl: contactData.profilePicUrl || "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF"
-                                };
-                                contacts.push(contact); // Add to local contacts array
-
-                                const li = document.createElement('li');
-                                li.className = 'flex items-center p-3 rounded-md hover:bg-gray-200 transition-colors duration-200 cursor-pointer';
-                                li.innerHTML = `
-                                    <img src="${contact.profilePicUrl}" alt="${contact.username}" class="w-10 h-10 rounded-full object-cover mr-3">
-                                    <div>
-                                        <p class="font-medium text-gray-800">${contact.username}</p>
-                                        <p class="text-sm text-gray-500">${contact.email}</p>
-                                    </div>
-                                `;
-                                li.addEventListener('click', () => startChatWithContact(contact));
-                                contactsList.appendChild(li);
-                            }
-                        });
-                        noContactsMessage.classList.add('hidden');
-                    } else {
-                        contactsList.innerHTML = '';
-                        noContactsMessage.classList.remove('hidden');
+                    const updatedContacts = [];
+                    for (const contactId of contactIds) {
+                        const contactInfo = await getUserInfo(contactId);
+                        if (contactInfo) {
+                            updatedContacts.push({ id: contactId, ...contactInfo });
+                        }
                     }
+                    contacts = updatedContacts;
+                    displayContacts();
                 }
             }, (error) => {
-                console.error("Error listening for contacts:", error);
+                console.error("Error al escuchar contactos:", error);
                 addNotification('Error de Contactos', 'No se pudieron cargar tus contactos.', 'error');
             });
         }
 
-
-        // New: Listen for incoming friend requests
-        async function listenForFriendRequests(userId) {
-            if (unsubscribeFriendRequests) unsubscribeFriendRequests();
-
-            const userDocRef = doc(db, "users", userId);
-
-            unsubscribeFriendRequests = onSnapshot(userDocRef, async (docSnap) => {
-                if (docSnap.exists()) {
-                    const userData = docSnap.data();
-                    const incomingRequestUids = userData.friendRequestsReceived || [];
-                    friendRequests = []; // Clear current requests list
-
-                    if (incomingRequestUids.length > 0) {
-                        const requestPromises = incomingRequestUids.map(uid => getDoc(doc(db, "users", uid)));
-                        const requestSnaps = await Promise.all(requestPromises);
-
-                        requestSnaps.forEach(requestSnap => {
-                            if (requestSnap.exists()) {
-                                const requestorData = requestSnap.data();
-                                friendRequests.push({
-                                    id: requestSnap.id,
-                                    email: requestorData.email,
-                                    username: requestorData.username,
-                                    profilePicUrl: requestorData.profilePicUrl || "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF"
-                                });
-                            }
-                        });
-                        displayFriendRequests();
-                    } else {
-                        displayFriendRequests(); // Call to update display to empty state
-                    }
-                    updateFriendRequestBadge();
-                }
-            }, (error) => {
-                console.error("Error listening for friend requests:", error);
-                addNotification('Error de Solicitudes', 'No se pudieron cargar tus solicitudes de amistad.', 'error');
-            });
-        }
-
-        function displayFriendRequests() {
-            friendRequestsList.innerHTML = '';
-            if (friendRequests.length === 0) {
-                noFriendRequestsMessage.classList.remove('hidden');
-                friendRequestsList.classList.add('hidden');
+        function displayContacts() {
+            contactsList.innerHTML = '';
+            if (contacts.length === 0) {
+                noContactsMessage.classList.remove('hidden');
             } else {
-                noFriendRequestsMessage.classList.add('hidden');
-                friendRequestsList.classList.remove('hidden');
-                friendRequests.forEach(requestor => {
+                noContactsMessage.classList.add('hidden');
+                contacts.forEach(contact => {
                     const li = document.createElement('li');
-                    li.className = 'flex items-center justify-between p-3 rounded-md bg-white shadow-sm border border-gray-200';
+                    li.className = 'flex items-center p-3 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors duration-200';
                     li.innerHTML = `
-                        <div class="flex items-center">
-                            <img src="${requestor.profilePicUrl}" alt="${requestor.username}" class="w-10 h-10 rounded-full object-cover mr-3">
-                            <div>
-                                <p class="font-medium text-gray-800">${requestor.username}</p>
-                                <p class="text-sm text-gray-500">${requestor.email} te ha enviado una solicitud.</p>
-                            </div>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button class="accept-request-btn px-3 py-1 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors" data-uid="${requestor.id}">Aceptar</button>
-                            <button class="reject-request-btn px-3 py-1 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors" data-uid="${requestor.id}">Rechazar</button>
-                        </div>
+                        <img src="${contact.profilePicUrl}" alt="${contact.username}" class="w-10 h-10 rounded-full object-cover mr-3">
+                        <span class="font-medium text-gray-800">${contact.username}</span>
                     `;
-                    friendRequestsList.appendChild(li);
-                });
-
-                // Add event listeners to the new buttons
-                friendRequestsList.querySelectorAll('.accept-request-btn').forEach(button => {
-                    button.addEventListener('click', (e) => acceptFriendRequest(e.target.dataset.uid));
-                });
-                friendRequestsList.querySelectorAll('.reject-request-btn').forEach(button => {
-                    button.addEventListener('click', (e) => rejectFriendRequest(e.target.dataset.uid));
+                    li.addEventListener('click', () => selectChat('contact', contact.id, contact.username, contact.profilePicUrl));
+                    contactsList.appendChild(li);
                 });
             }
+            // Update group member selection list
+            updateGroupMemberSelection();
         }
-
-        function updateFriendRequestBadge() {
-            const count = friendRequests.length;
-            if (count > 0) {
-                friendRequestBadge.textContent = count;
-                friendRequestBadge.classList.remove('hidden');
-            } else {
-                friendRequestBadge.classList.add('hidden');
-            }
-        }
-
-        async function acceptFriendRequest(requestorId) {
-            try {
-                // Remove from current user's received requests and add to contacts
-                const currentUserRef = doc(db, "users", currentUserId);
-                await updateDoc(currentUserRef, {
-                    friendRequestsReceived: arrayRemove(requestorId),
-                    contacts: arrayUnion(requestorId)
-                });
-
-                // Remove from requestor's sent requests and add to their contacts
-                const requestorRef = doc(db, "users", requestorId);
-                await updateDoc(requestorRef, {
-                    friendRequestsSent: arrayRemove(currentUserId),
-                    contacts: arrayUnion(currentUserId)
-                });
-
-                addNotification('Solicitud Aceptada', `Ahora eres amigo de ${friendRequests.find(r => r.id === requestorId)?.username || 'un usuario'}.`, 'success');
-                // Re-fetch contacts and requests to update UI
-                listenForContacts(currentUserId);
-                listenForFriendRequests(currentUserId);
-            } catch (error) {
-                console.error("Error accepting friend request:", error);
-                addNotification('Error', 'No se pudo aceptar la solicitud de amistad.', 'error');
-            }
-        }
-
-        async function rejectFriendRequest(requestorId) {
-            try {
-                // Remove from current user's received requests
-                const currentUserRef = doc(db, "users", currentUserId);
-                await updateDoc(currentUserRef, {
-                    friendRequestsReceived: arrayRemove(requestorId)
-                });
-
-                // Remove from requestor's sent requests
-                const requestorRef = doc(db, "users", requestorId);
-                await updateDoc(requestorRef, {
-                    friendRequestsSent: arrayRemove(currentUserId)
-                });
-
-                addNotification('Solicitud Rechazada', `Has rechazado la solicitud de amistad.`, 'info');
-                // Re-fetch requests to update UI
-                listenForFriendRequests(currentUserId);
-            } catch (error) {
-                console.error("Error rejecting friend request:", error);
-                addNotification('Error', 'No se pudo rechazar la solicitud de amistad.', 'error');
-            }
-        }
-
 
         addContactButton.addEventListener('click', () => {
-            addContactMessage.textContent = '';
             contactInput.value = '';
+            addContactMessage.textContent = '';
             addContactModal.classList.remove('hidden');
         });
 
@@ -1536,317 +1610,254 @@
             }
 
             if (identifier === currentUserEmail || identifier === userDisplayName) {
-                addContactMessage.textContent = 'No puedes añadirte a ti mismo.';
+                addContactMessage.textContent = 'No puedes enviarte una solicitud de amistad a ti mismo.';
+                addNotification('Error de Solicitud', 'No puedes añadirte a ti mismo.', 'error');
                 return;
             }
 
             try {
-                // Find target user by email or username
-                let targetUserQuery;
-                if (identifier.includes('@')) {
-                    targetUserQuery = query(collection(db, "users"), where("email", "==", identifier));
+                // Find the target user by email or username
+                let targetUserDoc;
+                const qByEmail = query(collection(db, "users"), where("email", "==", identifier));
+                const qByUsername = query(collection(db, "users"), where("username", "==", identifier));
+
+                const [emailSnapshot, usernameSnapshot] = await Promise.all([getDocs(qByEmail), getDocs(qByUsername)]);
+
+                if (!emailSnapshot.empty) {
+                    targetUserDoc = emailSnapshot.docs[0];
+                } else if (!usernameSnapshot.empty) {
+                    targetUserDoc = usernameSnapshot.docs[0];
                 } else {
-                    targetUserQuery = query(collection(db, "users"), where("username", "==", identifier));
-                }
-
-                const querySnapshot = await getDocs(targetUserQuery);
-
-                if (querySnapshot.empty) {
-                    addContactMessage.textContent = 'Usuario no encontrado.';
-                    addNotification('Error', 'Usuario no encontrado.', 'error');
+                    addContactMessage.textContent = 'Usuario no encontrado. Verifica el correo o nombre de usuario.';
+                    addNotification('Error de Solicitud', 'Usuario no encontrado.', 'error');
                     return;
                 }
 
-                const targetUserDoc = querySnapshot.docs[0];
                 const targetUserId = targetUserDoc.id;
                 const targetUserData = targetUserDoc.data();
 
-                // Check if already contacts
+                // Check if already a contact
                 if (contacts.some(c => c.id === targetUserId)) {
-                    addContactMessage.textContent = `${targetUserData.username} ya es uno de tus contactos.`;
-                    addNotification('Info', `${targetUserData.username} ya es uno de tus contactos.`, 'info');
+                    addContactMessage.textContent = 'Este usuario ya es tu contacto.';
+                    addNotification('Error de Solicitud', 'Ya es tu contacto.', 'error');
                     return;
                 }
 
                 // Check if a request is already pending (sent by current user)
                 const currentUserDoc = await getDoc(doc(db, "users", currentUserId));
                 const currentUserData = currentUserDoc.data();
-                if (currentUserData.friendRequestsSent && currentUserData.friendRequestsSent.includes(targetUserId)) {
-                     addContactMessage.textContent = `Ya has enviado una solicitud a ${targetUserData.username}.`;
-                     addNotification('Info', `Ya has enviado una solicitud a ${targetUserData.username}.`, 'info');
-                     return;
-                }
-
-                // Check if a request is already pending (sent by target user to current user)
-                if (currentUserData.friendRequestsReceived && currentUserData.friendRequestsReceived.includes(targetUserId)) {
-                    addContactMessage.textContent = `${targetUserData.username} ya te ha enviado una solicitud. Puedes aceptarla en la sección de "Solicitudes".`;
-                    addNotification('Info', `${targetUserData.username} ya te ha enviado una solicitud. Puedes aceptarla en la sección de "Solicitudes".`, 'info');
+                if (currentUserData.friendRequestsSent && currentUserData.friendRequestsSent.some(req => req.receiverId === targetUserId)) {
+                    addContactMessage.textContent = 'Ya has enviado una solicitud a este usuario.';
+                    addNotification('Error de Solicitud', 'Solicitud ya enviada.', 'error');
                     return;
                 }
 
+                // Check if a request is already pending (received by current user from target)
+                if (friendRequests.some(req => req.senderId === targetUserId)) {
+                    addContactMessage.textContent = 'Este usuario ya te ha enviado una solicitud. Puedes aceptarla.';
+                    addNotification('Error de Solicitud', 'Solicitud pendiente de aceptación.', 'info');
+                    return;
+                }
 
-                // Send friend request
-                const currentUserRef = doc(db, "users", currentUserId);
-                const targetUserRef = doc(db, "users", targetUserId);
-
-                await updateDoc(currentUserRef, {
-                    friendRequestsSent: arrayUnion(targetUserId)
+                // Add to sender's friendRequestsSent
+                await updateDoc(doc(db, "users", currentUserId), {
+                    friendRequestsSent: arrayUnion({ receiverId: targetUserId, timestamp: serverTimestamp() })
                 });
-                await updateDoc(targetUserRef, {
-                    friendRequestsReceived: arrayUnion(currentUserId)
+
+                // Add to receiver's friendRequestsReceived
+                await updateDoc(doc(db, "users", targetUserId), {
+                    friendRequestsReceived: arrayUnion({ senderId: currentUserId, timestamp: serverTimestamp() })
                 });
 
-                addContactMessage.textContent = `Solicitud de amistad enviada a ${targetUserData.username}.`;
+                addContactMessage.textContent = `Solicitud de amistad enviada a ${targetUserData.username || targetUserData.email}.`;
                 addContactMessage.className = 'text-sm text-green-600';
-                addNotification('Solicitud Enviada', `Has enviado una solicitud a ${targetUserData.username}.`, 'success');
-
+                addNotification('Solicitud Enviada', `Solicitud enviada a ${targetUserData.username || targetUserData.email}.`, 'success');
                 setTimeout(() => addContactModal.classList.add('hidden'), 2000);
 
             } catch (error) {
-                console.error("Error al añadir contacto:", error);
-                addContactMessage.textContent = 'Hubo un error al enviar la solicitud.';
-                addNotification('Error', 'Hubo un error al enviar la solicitud de amistad.', 'error');
+                console.error("Error al enviar solicitud de amistad:", error);
+                addContactMessage.textContent = 'Hubo un error al enviar la solicitud de amistad.';
+                addNotification('Error de Solicitud', 'No se pudo enviar la solicitud.', 'error');
             }
         });
 
 
-        // --- Chat Functionality ---
-        function startChatWithContact(contact) {
-            showView('chat-messages-container');
-            activeChat = { type: 'contact', id: contact.id, name: contact.username, pic: contact.profilePicUrl };
-            currentChatName.textContent = contact.username;
-            currentChatPic.src = contact.profilePicUrl;
-            currentChatStatus.textContent = 'Online'; // Or fetch actual status
-            messageInputArea.classList.remove('hidden');
-            addGroupMemberButton.classList.add('hidden'); // Hide group specific buttons
-            leaveGroupButton.classList.add('hidden');
-            listenForMessages();
-        }
+        // --- Friend Request Management ---
+        async function listenForFriendRequests(userId) {
+            const userDocRef = doc(db, "users", userId);
+            unsubscribeFriendRequests = onSnapshot(userDocRef, async (docSnap) => {
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    const receivedRequests = userData.friendRequestsReceived || [];
 
-        function startChatWithGroup(group) {
-            showView('chat-messages-container');
-            activeChat = { type: 'group', id: group.id, name: group.name, pic: group.photoURL, adminId: group.adminId, members: group.members };
-            currentChatName.textContent = group.name;
-            currentChatPic.src = group.photoURL;
-            currentChatStatus.textContent = `${group.members.length} miembros`; // Show member count
-            messageInputArea.classList.remove('hidden');
-
-            // Show/hide group specific buttons based on admin status
-            if (group.adminId === currentUserId) {
-                addGroupMemberButton.classList.remove('hidden');
-            } else {
-                addGroupMemberButton.classList.add('hidden');
-            }
-            leaveGroupButton.classList.remove('hidden'); // Always show leave button for groups
-
-            listenForMessages();
-        }
-
-        async function listenForMessages() {
-            if (unsubscribeMessages) unsubscribeMessages(); // Stop previous listener
-
-            chatMessagesContainer.innerHTML = ''; // Clear existing messages
-            const messagesCollectionRef = collection(db, "messages");
-            let q;
-
-            if (activeChat.type === 'contact') {
-                // For direct messages, query messages between the two users
-                // Create a unique chat ID for direct messages by sorting UIDs
-                const chatParticipants = [currentUserId, activeChat.id].sort();
-                const dmChatId = chatParticipants.join('_');
-
-                q = query(messagesCollectionRef,
-                    where("chatType", "==", "private"),
-                    where("participants", "array-contains-any", chatParticipants), // Use array-contains-any for efficiency
-                    orderBy("timestamp", "asc")
-                );
-            } else if (activeChat.type === 'group') {
-                // For group messages, query messages belonging to the group
-                q = query(messagesCollectionRef,
-                    where("chatType", "==", "group"),
-                    where("groupId", "==", activeChat.id),
-                    orderBy("timestamp", "asc")
-                );
-            } else {
-                console.warn("No active chat selected.");
-                return;
-            }
-
-            unsubscribeMessages = onSnapshot(q, async (snapshot) => {
-                // Clear the container only if it's the first load or a new chat
-                if (snapshot.docChanges().length === snapshot.docs.length) { // Check if all docs are 'added' (initial load)
-                    chatMessagesContainer.innerHTML = '';
-                }
-
-                const messagesToDisplay = [];
-                for (const docChange of snapshot.docChanges()) {
-                    const message = docChange.doc.data();
-                    const messageId = docChange.doc.id;
-
-                    // Filter messages for direct chats more precisely
-                    if (activeChat.type === 'contact') {
-                        const participants = message.participants || [];
-                        const chatParticipants = [currentUserId, activeChat.id].sort();
-                        const isForThisChat = participants.length === 2 &&
-                                              participants.includes(chatParticipants[0]) &&
-                                              participants.includes(chatParticipants[1]);
-                        if (!isForThisChat) {
-                            continue; // Skip messages not for this specific private chat
+                    const updatedRequests = [];
+                    for (const req of receivedRequests) {
+                        const senderInfo = await getUserInfo(req.senderId);
+                        if (senderInfo) {
+                            updatedRequests.push({ senderId: req.senderId, timestamp: req.timestamp, ...senderInfo });
                         }
                     }
-                    messagesToDisplay.push({ message, messageId, type: docChange.type }); // Use docChange.type
+                    friendRequests = updatedRequests;
+                    displayFriendRequests();
+                    updateFriendRequestBadge();
                 }
-
-                // Sort messages by timestamp if they are not already
-                messagesToDisplay.sort((a, b) => {
-                    const tsA = a.message.timestamp ? a.message.timestamp.toMillis() : 0;
-                    const tsB = b.message.timestamp ? b.message.timestamp.toMillis() : 0;
-                    return tsA - tsB;
-                });
-
-                // Re-render all messages to ensure correct order after filtering/sorting
-                chatMessagesContainer.innerHTML = '';
-                for (const item of messagesToDisplay) {
-                    await displayMessage(item.message, item.messageId);
-                }
-
-                chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
             }, (error) => {
-                console.error("Error listening for messages:", error);
-                addNotification('Error de Mensajes', 'No se pudieron cargar los mensajes.', 'error');
+                console.error("Error al escuchar solicitudes de amistad:", error);
+                addNotification('Error de Solicitudes', 'No se pudieron cargar las solicitudes de amistad.', 'error');
             });
         }
 
+        function displayFriendRequests() {
+            friendRequestsList.innerHTML = '';
+            if (friendRequests.length === 0) {
+                noFriendRequestsMessage.classList.remove('hidden');
+            } else {
+                noFriendRequestsMessage.classList.add('hidden');
+                friendRequests.forEach(request => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200 shadow-sm mb-2';
+                    li.innerHTML = `
+                        <div class="flex items-center">
+                            <img src="${request.profilePicUrl}" alt="${request.username}" class="w-10 h-10 rounded-full object-cover mr-3">
+                            <div>
+                                <span class="font-medium text-gray-800">${request.username}</span>
+                                <p class="text-sm text-gray-500">Solicitud de amistad</p>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button data-sender-id="${request.senderId}" class="accept-request-button px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors text-sm">Aceptar</button>
+                            <button data-sender-id="${request.senderId}" class="reject-request-button px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-sm">Rechazar</button>
+                        </div>
+                    `;
+                    friendRequestsList.appendChild(li);
+                });
 
-        // Function to display a single message
-        async function displayMessage(message, messageId) {
-            const messageElement = document.createElement('div');
-            const isSelf = message.senderId === currentUserId;
-            const senderInfo = await getUserInfo(message.senderId);
-            const senderName = senderInfo ? senderInfo.username : 'Usuario Desconocido';
-            const senderPic = senderInfo ? senderInfo.profilePicUrl : 'https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF';
-
-            let mediaContent = '';
-            if (message.mediaUrl) {
-                if (message.mediaType && message.mediaType.startsWith('image/')) {
-                    mediaContent = `<img src="${message.mediaUrl}" alt="Media" class="max-w-xs rounded-lg mt-2 cursor-pointer" onclick="window.open('${message.mediaUrl}', '_blank');">`;
-                } else if (message.mediaType && message.mediaType.startsWith('video/')) {
-                    mediaContent = `<video controls src="${message.mediaUrl}" class="max-w-xs rounded-lg mt-2" onclick="this.play();"></video>`;
-                }
+                // Add event listeners to new buttons
+                document.querySelectorAll('.accept-request-button').forEach(button => {
+                    button.addEventListener('click', (e) => acceptFriendRequest(e.target.dataset.senderId));
+                });
+                document.querySelectorAll('.reject-request-button').forEach(button => {
+                    button.addEventListener('click', (e) => rejectFriendRequest(e.target.dataset.senderId));
+                });
             }
-
-            messageElement.classList.add('message-container', isSelf ? 'self' : 'other');
-
-            messageElement.innerHTML = `
-                <img src="${senderPic}" alt="${senderName}" class="message-avatar">
-                <div class="message-bubble ${isSelf ? 'self' : 'other'}">
-                    ${!isSelf ? `<p class="message-sender">${senderName}</p>` : ''}
-                    <p class="message-content">${message.text}</p>
-                    ${mediaContent}
-                    <p class="message-timestamp">${message.timestamp ? new Date(message.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Ahora'}</p>
-                </div>
-            `;
-            chatMessagesContainer.appendChild(messageElement);
-            chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
         }
 
-
-        sendMessageButton.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
+        function updateFriendRequestBadge() {
+            const pendingRequestsCount = friendRequests.length;
+            if (pendingRequestsCount > 0) {
+                friendRequestBadge.textContent = pendingRequestsCount;
+                friendRequestBadge.classList.remove('hidden');
+            } else {
+                friendRequestBadge.classList.add('hidden');
             }
-        });
+        }
 
-        async function sendMessage() {
-            const text = messageInput.value.trim();
-            const mediaFile = chatMediaUploadInput.files[0];
-
-            if (!activeChat) {
-                addNotification('Error', 'Selecciona un chat para enviar un mensaje.', 'error');
-                return;
-            }
-            if (!text && !mediaFile) {
-                return; // Don't send empty messages
-            }
-
+        async function acceptFriendRequest(senderId) {
             try {
-                let mediaUrl = '';
-                let mediaType = '';
+                const currentUserRef = doc(db, "users", currentUserId);
+                const senderUserRef = doc(db, "users", senderId);
 
-                if (mediaFile) {
-                    if (mediaFile.size > 20 * 1024 * 1024) { // 20MB limit for media
-                        addNotification('Error de Subida', 'El archivo multimedia es demasiado grande (máximo 20MB).', 'error');
-                        return;
-                    }
-                    const mediaRef = ref(storage, `chat_media/${currentUserId}/${Date.now()}_${mediaFile.name}`);
-                    await uploadBytes(mediaRef, mediaFile);
-                    mediaUrl = await getDownloadURL(mediaRef);
-                    mediaType = mediaFile.type;
-                }
+                // 1. Add sender to current user's contacts
+                await updateDoc(currentUserRef, {
+                    contacts: arrayUnion(senderId),
+                    friendRequestsReceived: arrayRemove({ senderId: senderId, timestamp: friendRequests.find(req => req.senderId === senderId).timestamp })
+                });
 
-                const messageData = {
-                    senderId: currentUserId,
-                    senderName: userDisplayName,
-                    text: text,
-                    timestamp: serverTimestamp(),
-                    mediaUrl: mediaUrl,
-                    mediaType: mediaType,
-                };
+                // 2. Add current user to sender's contacts
+                await updateDoc(senderUserRef, {
+                    contacts: arrayUnion(currentUserId),
+                    friendRequestsSent: arrayRemove({ receiverId: currentUserId, timestamp: (await getDoc(senderUserRef)).data().friendRequestsSent.find(req => req.receiverId === currentUserId).timestamp })
+                });
 
-                if (activeChat.type === 'contact') {
-                    // For private chats
-                    messageData.chatType = 'private';
-                    messageData.participants = [currentUserId, activeChat.id].sort(); // Store sorted for easy querying
-                    messageData.receiverId = activeChat.id; // For direct message
-                } else if (activeChat.type === 'group') {
-                    // For group chats
-                    messageData.chatType = 'group';
-                    messageData.groupId = activeChat.id;
-                }
-
-                await addDoc(collection(db, "messages"), messageData);
-                messageInput.value = ''; // Clear input
-                chatMediaUploadInput.value = ''; // Clear file input
-                addNotification('Mensaje Enviado', 'Tu mensaje ha sido enviado.', 'success');
-
+                addNotification('Solicitud Aceptada', `Has aceptado la solicitud de amistad de ${friendRequests.find(req => req.senderId === senderId).username}.`, 'success');
+                // Re-listen for contacts and friend requests to update UI
+                listenForContacts(currentUserId);
+                listenForFriendRequests(currentUserId);
             } catch (error) {
-                console.error("Error sending message:", error);
-                addNotification('Error al Enviar', 'Hubo un error al enviar el mensaje.', 'error');
+                console.error("Error al aceptar solicitud de amistad:", error);
+                addNotification('Error', 'No se pudo aceptar la solicitud de amistad.', 'error');
             }
         }
 
-        attachMediaButton.addEventListener('click', () => {
-            chatMediaUploadInput.click();
-        });
+        async function rejectFriendRequest(senderId) {
+            try {
+                const currentUserRef = doc(db, "users", currentUserId);
+                const senderUserRef = doc(db, "users", senderId);
+
+                // 1. Remove from current user's received requests
+                await updateDoc(currentUserRef, {
+                    friendRequestsReceived: arrayRemove({ senderId: senderId, timestamp: friendRequests.find(req => req.senderId === senderId).timestamp })
+                });
+
+                // 2. Remove from sender's sent requests
+                await updateDoc(senderUserRef, {
+                    friendRequestsSent: arrayRemove({ receiverId: currentUserId, timestamp: (await getDoc(senderUserRef)).data().friendRequestsSent.find(req => req.receiverId === currentUserId).timestamp })
+                });
+
+                addNotification('Solicitud Rechazada', `Has rechazado la solicitud de amistad de ${friendRequests.find(req => req.senderId === senderId).username}.`, 'info');
+                // Re-listen for friend requests to update UI
+                listenForFriendRequests(currentUserId);
+            } catch (error) {
+                console.error("Error al rechazar solicitud de amistad:", error);
+                addNotification('Error', 'No se pudo rechazar la solicitud de amistad.', 'error');
+            }
+        }
 
 
         // --- Group Management ---
-        createGroupButton.addEventListener('click', async () => {
-            createGroupMessage.textContent = '';
-            groupNameInput.value = '';
-            groupDescriptionInput.value = '';
-            groupPhotoUploadInput.value = ''; // Clear file input
-            groupPhotoPreview.src = "https://placehold.co/80x80/E2E8F0/4A5568?text=Grupo"; // Reset preview
+        async function listenForGroups(userId) {
+            const groupsRef = collection(db, "groups");
+            // Query for groups where the current user is a member
+            const q = query(groupsRef, where("members", "array-contains", userId));
 
-            // Populate member selection with current contacts
-            groupMemberSelection.innerHTML = '';
-            if (contacts.length === 0) {
-                noContactsForGroupMessage.classList.remove('hidden');
-                groupMemberSelection.classList.add('hidden');
+            unsubscribeGroups = onSnapshot(q, async (snapshot) => {
+                const updatedGroups = [];
+                for (const docSnap of snapshot.docs) {
+                    const groupData = docSnap.data();
+                    // Fetch admin info
+                    let adminInfo = { username: "Admin Desconocido", profilePicUrl: "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF" };
+                    if (groupData.adminId) {
+                        adminInfo = await getUserInfo(groupData.adminId);
+                    }
+                    updatedGroups.push({ id: docSnap.id, ...groupData, adminInfo });
+                }
+                groups = updatedGroups;
+                displayGroups();
+            }, (error) => {
+                console.error("Error al escuchar grupos:", error);
+                addNotification('Error de Grupos', 'No se pudieron cargar tus grupos.', 'error');
+            });
+        }
+
+        function displayGroups() {
+            groupsList.innerHTML = '';
+            if (groups.length === 0) {
+                noGroupsMessage.classList.remove('hidden');
             } else {
-                noContactsForGroupMessage.classList.add('hidden');
-                groupMemberSelection.classList.remove('hidden');
-                contacts.forEach(contact => {
-                    const div = document.createElement('div');
-                    div.className = 'flex items-center space-x-2';
-                    div.innerHTML = `
-                        <input type="checkbox" id="member-${contact.id}" value="${contact.id}" class="form-checkbox h-4 w-4 text-custom-primary rounded">
-                        <label for="member-${contact.id}" class="text-sm text-gray-700">${contact.username}</label>
+                noGroupsMessage.classList.add('hidden');
+                groups.forEach(group => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center p-3 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors duration-200';
+                    li.innerHTML = `
+                        <img src="${group.photoURL || 'https://placehold.co/80x80/E2E8F0/4A5568?text=Grupo'}" alt="${group.name}" class="w-10 h-10 rounded-full object-cover mr-3">
+                        <div>
+                            <span class="font-medium text-gray-800">${group.name}</span>
+                            <p class="text-sm text-gray-500">${group.description || 'Sin descripción'}</p>
+                        </div>
                     `;
-                    groupMemberSelection.appendChild(div);
+                    li.addEventListener('click', () => selectChat('group', group.id, group.name, group.photoURL, group.adminId));
+                    groupsList.appendChild(li);
                 });
             }
+        }
+
+        createGroupButton.addEventListener('click', () => {
+            groupNameInput.value = '';
+            groupDescriptionInput.value = '';
+            groupPhotoUploadInput.value = '';
+            groupPhotoPreview.src = 'https://placehold.co/80x80/E2E8F0/4A5568?text=Grupo';
+            createGroupMessage.textContent = '';
+            updateGroupMemberSelection();
             createGroupModal.classList.remove('hidden');
         });
 
@@ -1866,18 +1877,33 @@
                     groupPhotoPreview.src = event.target.result;
                 };
                 reader.readAsDataURL(file);
-            } else {
-                groupPhotoPreview.src = "https://placehold.co/80x80/E2E8F0/4A5568?text=Grupo";
             }
         });
+
+        function updateGroupMemberSelection() {
+            groupMemberSelection.innerHTML = '';
+            if (contacts.length === 0) {
+                noContactsForGroupMessage.classList.remove('hidden');
+                groupMemberSelection.appendChild(noContactsForGroupMessage);
+            } else {
+                noContactsForGroupMessage.classList.add('hidden');
+                contacts.forEach(contact => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center space-x-2';
+                    div.innerHTML = `
+                        <input type="checkbox" id="member-${contact.id}" value="${contact.id}" class="form-checkbox h-4 w-4 text-custom-primary rounded focus:ring-custom-primary">
+                        <label for="member-${contact.id}" class="text-sm text-gray-700">${contact.username}</label>
+                    `;
+                    groupMemberSelection.appendChild(div);
+                });
+            }
+        }
 
         createGroupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const groupName = groupNameInput.value.trim();
             const groupDescription = groupDescriptionInput.value.trim();
-            const groupPhotoFile = groupPhotoUploadInput.files[0];
-            const selectedMembers = Array.from(groupMemberSelection.querySelectorAll('input[type="checkbox"]:checked'))
-                                       .map(cb => cb.value);
+            const selectedMembers = Array.from(groupMemberSelection.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
 
             if (!groupName) {
                 createGroupMessage.textContent = 'El nombre del grupo es obligatorio.';
@@ -1889,23 +1915,28 @@
                 return;
             }
 
-            // Add current user to selected members as they are the creator
+            // Add current user to selected members automatically
             if (!selectedMembers.includes(currentUserId)) {
                 selectedMembers.push(currentUserId);
             }
 
-            try {
-                let groupPhotoURL = "https://placehold.co/80x80/E2E8F0/4A5568?text=Grupo";
-                if (groupPhotoFile) {
-                    if (groupPhotoFile.size > 5 * 1024 * 1024) { // 5MB limit
-                        addNotification('Error de Subida', 'La foto del grupo es demasiado grande (máximo 5MB).', 'error');
-                        return;
-                    }
-                    const storageRef = ref(storage, `group_photos/${Date.now()}_${groupPhotoFile.name}`);
-                    await uploadBytes(storageRef, groupPhotoFile);
-                    groupPhotoURL = await getDownloadURL(storageRef);
+            let groupPhotoURL = '';
+            const file = groupPhotoUploadInput.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    addNotification('Error de Subida', 'La foto del grupo es demasiado grande (máximo 5MB).', 'error');
+                    return;
                 }
+                try {
+                    groupPhotoURL = await uploadImageToCloudinary(file);
+                } catch (error) {
+                    console.error("Error al subir foto de grupo:", error);
+                    addNotification('Error de Subida', 'Hubo un error al subir la foto del grupo.', 'error');
+                    return;
+                }
+            }
 
+            try {
                 const newGroupRef = await addDoc(collection(db, "groups"), {
                     name: groupName,
                     description: groupDescription,
@@ -1915,71 +1946,40 @@
                     createdAt: serverTimestamp()
                 });
 
-                // Add the group to each member's user document
-                await Promise.all(selectedMembers.map(memberId => {
-                    const userRef = doc(db, "users", memberId);
-                    return updateDoc(userRef, {
+                // Update each member's user document to include this group in their 'groups' array
+                for (const memberId of selectedMembers) {
+                    await updateDoc(doc(db, "users", memberId), {
                         groups: arrayUnion(newGroupRef.id)
                     });
-                }));
+                }
 
-                addNotification('Grupo Creado', `El grupo "${groupName}" ha sido creado correctamente.`, 'success');
+                addNotification('Grupo Creado', `El grupo "${groupName}" ha sido creado.`, 'success');
                 createGroupModal.classList.add('hidden');
-                listenForGroups(currentUserId); // Refresh groups list
+                // Refresh groups list
+                listenForGroups(currentUserId);
             } catch (error) {
                 console.error("Error al crear grupo:", error);
                 createGroupMessage.textContent = 'Hubo un error al crear el grupo.';
-                addNotification('Error', 'Hubo un error al crear el grupo.', 'error');
+                addNotification('Error de Grupo', 'No se pudo crear el grupo.', 'error');
             }
         });
 
-        async function listenForGroups(userId) {
-            if (unsubscribeGroups) unsubscribeGroups();
-
-            const groupsCollectionRef = collection(db, "groups");
-            const q = query(groupsCollectionRef, where("members", "array-contains", userId));
-
-            unsubscribeGroups = onSnapshot(q, (snapshot) => {
-                groups = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                groupsList.innerHTML = '';
-                if (groups.length > 0) {
-                    groups.forEach(group => {
-                        const li = document.createElement('li');
-                        li.className = 'flex items-center p-3 rounded-md hover:bg-gray-200 transition-colors duration-200 cursor-pointer';
-                        li.innerHTML = `
-                            <img src="${group.photoURL}" alt="${group.name}" class="w-10 h-10 rounded-full object-cover mr-3">
-                            <div>
-                                <p class="font-medium text-gray-800">${group.name}</p>
-                                <p class="text-sm text-gray-500">${group.members.length} miembros</p>
-                            </div>
-                        `;
-                        li.addEventListener('click', () => startChatWithGroup(group));
-                        groupsList.appendChild(li);
-                    });
-                    noGroupsMessage.classList.add('hidden');
-                } else {
-                    noGroupsMessage.classList.remove('hidden');
+        // Add Group Member logic
+        if (addGroupMemberButton) {
+            addGroupMemberButton.addEventListener('click', () => {
+                if (!activeChat || activeChat.type !== 'group') {
+                    showMessageBox('Error', 'Debes seleccionar un grupo para añadir miembros.');
+                    return;
                 }
-            }, (error) => {
-                console.error("Error listening for groups:", error);
-                addNotification('Error de Grupos', 'No se pudieron cargar tus grupos.', 'error');
+                if (activeChat.adminId !== currentUserId) {
+                    showMessageBox('Permiso Denegado', 'Solo el administrador del grupo puede añadir miembros.');
+                    return;
+                }
+                if (addGroupMemberModal) addGroupMemberModal.classList.remove('hidden');
+                if (addGroupMemberMessage) addGroupMemberMessage.textContent = '';
+                if (addGroupMemberInput) addGroupMemberInput.value = '';
             });
         }
-
-
-        addGroupMemberButton.addEventListener('click', () => {
-            if (!activeChat || activeChat.type !== 'group') {
-                showMessageBox('Error', 'Debes tener un grupo seleccionado para añadir miembros.');
-                return;
-            }
-            if (activeChat.adminId !== currentUserId) {
-                showMessageBox('Permiso Denegado', 'Solo el administrador del grupo puede añadir miembros.');
-                return;
-            }
-            if (addGroupMemberModal) addGroupMemberModal.classList.remove('hidden');
-            if (addGroupMemberMessage) addGroupMemberMessage.textContent = '';
-            if (addGroupMemberInput) addGroupMemberInput.value = '';
-        });
 
         if (cancelAddGroupMemberButton) {
             cancelAddGroupMemberButton.addEventListener('click', () => {
@@ -1991,167 +1991,187 @@
             addGroupMemberForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const memberIdentifier = addGroupMemberInput ? addGroupMemberInput.value.trim() : '';
-                if (memberIdentifier) {
-                    await addMemberToGroup(memberIdentifier);
-                } else {
+                if (!memberIdentifier) {
                     if (addGroupMemberMessage) addGroupMemberMessage.textContent = 'Por favor, introduce el correo electrónico o nombre de usuario del miembro.';
+                    return;
+                }
+
+                if (!activeChat || activeChat.type !== 'group') {
+                    showMessageBox('Error', 'No hay un grupo activo para añadir miembros.');
+                    return;
+                }
+
+                try {
+                    // Find the target user by email or username
+                    let targetUserDoc;
+                    const qByEmail = query(collection(db, "users"), where("email", "==", memberIdentifier));
+                    const qByUsername = query(collection(db, "users"), where("username", "==", memberIdentifier));
+
+                    const [emailSnapshot, usernameSnapshot] = await Promise.all([getDocs(qByEmail), getDocs(qByUsername)]);
+
+                    if (!emailSnapshot.empty) {
+                        targetUserDoc = emailSnapshot.docs[0];
+                    } else if (!usernameSnapshot.empty) {
+                        targetUserDoc = usernameSnapshot.docs[0];
+                    } else {
+                        if (addGroupMemberMessage) addGroupMemberMessage.textContent = 'Usuario no encontrado. Verifica el correo o nombre de usuario.';
+                        addNotification('Error al Añadir Miembro', 'Usuario no encontrado.', 'error');
+                        return;
+                    }
+
+                    const targetUserId = targetUserDoc.id;
+                    const targetUserData = targetUserDoc.data();
+
+                    // Check if already a member
+                    if (activeChat.members.includes(targetUserId)) {
+                        if (addGroupMemberMessage) addGroupMemberMessage.textContent = 'Este usuario ya es miembro del grupo.';
+                        addNotification('Error al Añadir Miembro', 'Ya es miembro del grupo.', 'error');
+                        return;
+                    }
+
+                    // Add member to group's members array
+                    const groupDocRef = doc(db, "groups", activeChat.id);
+                    await updateDoc(groupDocRef, {
+                        members: arrayUnion(targetUserId)
+                    });
+
+                    // Add group to member's groups array
+                    const memberUserDocRef = doc(db, "users", targetUserId);
+                    await updateDoc(memberUserDocRef, {
+                        groups: arrayUnion(activeChat.id)
+                    });
+
+                    if (addGroupMemberMessage) {
+                        addGroupMemberMessage.textContent = `"${targetUserData.username || targetUserData.email}" ha sido añadido al grupo.`;
+                        addGroupMemberMessage.className = 'text-sm text-green-600';
+                    }
+                    addNotification('Miembro Añadido', `"${targetUserData.username || targetUserData.email}" ha sido añadido al grupo "${activeChat.name}".`, 'success');
+                    setTimeout(() => {
+                        if (addGroupMemberModal) addGroupMemberModal.classList.add('hidden');
+                    }, 2000);
+
+                    // Re-select chat to refresh member list in activeChat object
+                    selectChat('group', activeChat.id, activeChat.name, activeChat.photoURL, activeChat.adminId);
+
+                } catch (error) {
+                    console.error("Error al añadir miembro al grupo:", error);
+                    if (addGroupMemberMessage) addGroupMemberMessage.textContent = 'Hubo un error al añadir el miembro al grupo.';
+                    addNotification('Error al Añadir Miembro', 'No se pudo añadir el miembro.', 'error');
                 }
             });
         }
 
-        async function addMemberToGroup(identifier) {
-            if (!activeChat || activeChat.type !== 'group' || activeChat.adminId !== currentUserId) {
-                addGroupMemberMessage.textContent = 'Operación no permitida.';
-                return;
-            }
-
-            try {
-                // Find target user by email or username
-                let targetUserQuery;
-                if (identifier.includes('@')) {
-                    targetUserQuery = query(collection(db, "users"), where("email", "==", identifier));
-                } else {
-                    targetUserQuery = query(collection(db, "users"), where("username", "==", identifier));
-                }
-
-                const querySnapshot = await getDocs(targetUserQuery);
-
-                if (querySnapshot.empty) {
-                    addGroupMemberMessage.textContent = 'Usuario no encontrado.';
-                    addNotification('Error', 'Usuario no encontrado para añadir al grupo.', 'error');
-                    return;
-                }
-
-                const targetUserDoc = querySnapshot.docs[0];
-                const targetUserId = targetUserDoc.id;
-                const targetUserData = targetUserDoc.data();
-
-                if (activeChat.members.includes(targetUserId)) {
-                    addGroupMemberMessage.textContent = `${targetUserData.username} ya es miembro de este grupo.`;
-                    addNotification('Info', `${targetUserData.username} ya es miembro del grupo.`, 'info');
-                    return;
-                }
-
-                // Add member to group's members array
-                const groupRef = doc(db, "groups", activeChat.id);
-                await updateDoc(groupRef, {
-                    members: arrayUnion(targetUserId)
-                });
-
-                // Add group to member's groups array
-                const memberUserRef = doc(db, "users", targetUserId);
-                await updateDoc(memberUserRef, {
-                    groups: arrayUnion(activeChat.id)
-                });
-
-                addGroupMemberMessage.textContent = `${targetUserData.username} ha sido añadido al grupo.`;
-                addGroupMemberMessage.className = 'text-green-600';
-                addNotification('Miembro Añadido', `${targetUserData.username} ha sido añadido a "${activeChat.name}".`, 'success');
-                if (addGroupMemberModal) addGroupMemberModal.classList.add('hidden');
-                listenForGroups(currentUserId); // Refresh group list to update member count
-            } catch (error) {
-                console.error("Error adding member to group:", error);
-                addGroupMemberMessage.textContent = 'Hubo un error al añadir al miembro.';
-                addNotification('Error', 'Hubo un error al añadir miembro al grupo.', 'error');
-            }
-        }
-
-        function leaveGroup() {
+        async function leaveGroup() {
             if (!activeChat || activeChat.type !== 'group') {
                 showMessageBox('Error', 'No hay un grupo activo para salir.');
                 return;
             }
 
-            confirmModalTitle.textContent = 'Salir del Grupo';
-            confirmModalContent.textContent = `¿Estás seguro de que quieres salir del grupo "${activeChat.name}"?`;
-            confirmModalOk.className = 'px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors';
-            confirmModalOk.onclick = async () => {
-                confirmModal.classList.add('hidden');
+            showConfirmModal('Salir del Grupo', `¿Estás seguro de que quieres salir del grupo "${activeChat.name}"?`, async () => {
                 try {
-                    // Remove user from group's members array
-                    const groupRef = doc(db, "groups", activeChat.id);
-                    await updateDoc(groupRef, {
-                        members: arrayRemove(currentUserId)
-                    });
+                    const groupDocRef = doc(db, "groups", activeChat.id);
+                    const groupDocSnap = await getDoc(groupDocRef);
 
-                    // Remove group from user's groups array
-                    const userRef = doc(db, "users", currentUserId);
-                    await updateDoc(userRef, {
-                        groups: arrayRemove(activeChat.id)
-                    });
+                    if (groupDocSnap.exists()) {
+                        const groupData = groupDocSnap.data();
+                        const currentMembers = groupData.members || [];
 
-                    // If group admin leaves and there are still members, assign a new admin
-                    if (activeChat.adminId === currentUserId && activeChat.members.length > 1) {
-                        const remainingMembers = activeChat.members.filter(memberId => memberId !== currentUserId);
-                        const newAdminId = remainingMembers[0]; // Assign first remaining member as new admin
-                        await updateDoc(groupRef, {
-                            adminId: newAdminId
-                        });
-                        addNotification('Admin de Grupo', `El administrador de "${activeChat.name}" ha cambiado.`, 'info');
+                        // If current user is the admin and is the only member, delete the group
+                        if (activeChat.adminId === currentUserId && currentMembers.length === 1 && currentMembers.includes(currentUserId)) {
+                            await deleteDoc(groupDocRef);
+                            // Remove group from user's groups array
+                            await updateDoc(doc(db, "users", currentUserId), {
+                                groups: arrayRemove(activeChat.id)
+                            });
+                            addNotification('Grupo Eliminado', `El grupo "${activeChat.name}" ha sido eliminado ya que eras el último miembro.`, 'info');
+                        } else {
+                            // Remove current user from group's members array
+                            await updateDoc(groupDocRef, {
+                                members: arrayRemove(currentUserId)
+                            });
+                            // Remove group from user's groups array
+                            await updateDoc(doc(db, "users", currentUserId), {
+                                groups: arrayRemove(activeChat.id)
+                            });
+                            addNotification('Has Salido del Grupo', `Has salido del grupo "${activeChat.name}".`, 'info');
+
+                            // If the admin leaves, assign a new admin if other members exist
+                            if (activeChat.adminId === currentUserId && currentMembers.length > 1) {
+                                const remainingMembers = currentMembers.filter(memberId => memberId !== currentUserId);
+                                const newAdminId = remainingMembers[0]; // Assign first remaining member as new admin
+                                await updateDoc(groupDocRef, {
+                                    adminId: newAdminId
+                                });
+                                addNotification('Administrador de Grupo', `"${activeChat.name}" ahora tiene un nuevo administrador.`, 'info');
+                            }
+                        }
                     }
-                    // If no members left, you might want to delete the group document entirely
-                    // For now, it will just be an empty group.
 
-                    addNotification('Grupo Abandonado', `Has salido del grupo "${activeChat.name}".`, 'success');
-                    activeChat = null; // Clear active chat
-                    showView('groups-list-view'); // Go back to groups list
-                    listenForGroups(currentUserId); // Refresh groups
+                    // Reset active chat and show groups list
+                    activeChat = null;
+                    showView('groups-list-view');
+                    // Refresh groups list
+                    listenForGroups(currentUserId);
+
                 } catch (error) {
                     console.error("Error al salir del grupo:", error);
-                    addNotification('Error', 'Hubo un error al salir del grupo.', 'error');
+                    addNotification('Error al Salir del Grupo', 'No se pudo salir del grupo.', 'error');
                 }
-            };
-            confirmModalCancel.onclick = () => {
-                confirmModal.classList.add('hidden');
-            };
-            confirmModal.classList.remove('hidden');
+            });
         }
 
         if (leaveGroupButton) leaveGroupButton.addEventListener('click', leaveGroup);
 
-        // --- Helper function to get user info (username and profile pic) by UID ---
-        // This function will be useful for displaying sender info in messages
-        const userInfoCache = {}; // Simple cache to avoid redundant Firestore reads
-        async function getUserInfo(uid) {
-            if (userInfoCache[uid]) {
-                return userInfoCache[uid];
-            }
-            try {
-                const userDocSnap = await getDoc(doc(db, "users", uid));
-                if (userDocSnap.exists()) {
-                    const userData = userDocSnap.data();
-                    const info = {
-                        username: userData.username || userData.email.split('@')[0],
-                        profilePicUrl: userData.profilePicUrl || "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF"
-                    };
-                    userInfoCache[uid] = info; // Cache the result
-                    return info;
+
+        // --- Chat Selection ---
+        async function selectChat(type, id, name, picUrl, adminId = null) {
+            activeChat = { type, id, name, picUrl, adminId };
+
+            currentChatName.textContent = name;
+            currentChatPic.src = picUrl || (type === 'group' ? 'https://placehold.co/50x50/E2E8F0/4A5568?text=Grupo' : 'https://placehold.co/50x50/A0AEC0/FFFFFF?text=PF');
+            currentChatStatus.textContent = type === 'contact' ? 'Online' : 'Grupo'; // Placeholder for status
+
+            // Show/hide group management buttons
+            if (type === 'group') {
+                addGroupMemberButton.classList.remove('hidden');
+                leaveGroupButton.classList.remove('hidden');
+                // Optionally, hide add member button if not admin
+                if (adminId !== currentUserId) {
+                    addGroupMemberButton.classList.add('hidden');
+                } else {
+                    addGroupMemberButton.classList.remove('hidden');
                 }
-            } catch (error) {
-                console.error("Error getting user info:", error);
+            } else {
+                addGroupMemberButton.classList.add('hidden');
+                leaveGroupButton.classList.add('hidden');
             }
-            return null; // User not found or error
+
+            showView('chat-messages-container');
+            await loadMessages(type, id);
         }
 
-        // --- Theme Toggle ---
-        themeToggleButton.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            const isDarkMode = document.body.classList.contains('dark-mode');
-            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-            themeToggleButton.innerHTML = `<i class="fas ${isDarkMode ? 'fa-moon' : 'fa-sun'} mr-2"></i>Cambiar Tema`;
+        // --- Confirmation Modal Logic ---
+        let confirmCallback = null;
+
+        function showConfirmModal(title, content, onConfirm) {
+            confirmModalTitle.textContent = title;
+            confirmModalContent.textContent = content;
+            confirmCallback = onConfirm;
+            confirmModal.classList.remove('hidden');
+        }
+
+        confirmModalOk.addEventListener('click', () => {
+            if (confirmCallback) {
+                confirmCallback();
+            }
+            confirmModal.classList.add('hidden');
+            confirmCallback = null; // Reset callback
         });
 
-        // Apply saved theme on load
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark-mode');
-                if (themeToggleButton) themeToggleButton.innerHTML = `<i class="fas fa-moon mr-2"></i>Cambiar Tema`;
-            } else {
-                if (themeToggleButton) themeToggleButton.innerHTML = `<i class="fas fa-sun mr-2"></i>Cambiar Tema`;
-            }
-        })();
-
+        confirmModalCancel.addEventListener('click', () => {
+            confirmModal.classList.add('hidden');
+            confirmCallback = null; // Reset callback
+        });
 
     </script>
 </body>
