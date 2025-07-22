@@ -363,7 +363,7 @@
             <!-- Header for current chat -->
             <div id="chat-header" class="bg-custom-surface p-4 border-b border-gray-200 flex items-center justify-between">
                 <div class="flex items-center">
-                    <img id="current-chat-pic" src="https://placehold.co/50x50/E2E8F0/4A5568?text=Chat" alt="Chat Pic" class="w-12 h-12 rounded-full object-cover mr-3">
+                    <img id="current-chat-pic" src="https://placehold.co/50x50/A0AEC0/FFFFFF?text=Chat" alt="Chat Pic" class="w-12 h-12 rounded-full object-cover mr-3">
                     <div>
                         <h2 id="current-chat-name" class="text-xl font-semibold text-gray-800">Selecciona un chat</h2>
                         <p id="current-chat-status" class="text-sm text-gray-500"></p>
@@ -462,7 +462,7 @@
                 <div>
                     <label for="group-photo-upload" class="block text-sm font-medium text-gray-700">Foto del Grupo (Opcional)</label>
                     <div class="mt-1 flex items-center space-x-4">
-                        <img id="group-photo-preview" src="https://placehold.co/80x80/E2E8F0/4A5568?text=Grupo" alt="Group Photo Preview" class="w-20 h-20 rounded-full object-cover border-2 border-gray-300">
+                        <img id="group-photo-preview" src="https://placehold.co/80x80/A0AEC0/FFFFFF?text=Grupo" alt="Group Photo Preview" class="w-20 h-20 rounded-full object-cover border-2 border-gray-300">
                         <input type="file" id="group-photo-upload" accept="image/*" class="hidden-file-input">
                         <button type="button" id="upload-group-pic-button" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
                             <i class="fas fa-upload mr-2"></i>Subir Foto
@@ -631,7 +631,7 @@
         };
 
         // --- Cloudinary Configuration ---
-        const CLOUDINARY_CLOUD_NAME = 'dea8gaaek'; // Your Cloudinary Cloud Name
+        const CLOUDINARY_CLOUD_NAME = 'dae8gaaek'; // Corrected Cloudinary Cloud Name
         const CLOUDINARY_UPLOAD_PRESET = 'SynergiCode'; // Your Cloudinary Upload Preset
 
         // --- Initialize Firebase Services IMMEDIATELY ---
@@ -881,7 +881,7 @@
                 if (!response.ok) {
                     const errorData = await response.json();
                     console.error("Cloudinary API response error:", errorData);
-                    if (errorData.error && errorData.error.message === "Unknown API key ") {
+                    if (errorData.error && errorData.error.message.includes("Unknown API key")) {
                         throw new Error(`Cloudinary upload failed: Unknown API key. Please check your Cloudinary Cloud Name and ensure your Upload Preset '${CLOUDINARY_UPLOAD_PRESET}' is correctly configured and active in your Cloudinary dashboard.`);
                     }
                     throw new Error(`Cloudinary upload failed: ${errorData.error ? errorData.error.message : response.statusText}`);
@@ -919,7 +919,7 @@
                         await setDoc(userDocRef, {
                             email: user.email,
                             username: user.email.split('@')[0], // Default username
-                            profilePicUrl: userProfilePicUrl,
+                            profilePicUrl: `https://placehold.co/100x100/A0AEC0/FFFFFF?text=${user.email.split('@')[0].charAt(0).toUpperCase()}`, // Default profile picture with initial
                             phone: '',
                             dob: '',
                             age: null,
@@ -930,11 +930,12 @@
                             createdAt: serverTimestamp()
                         });
                         userDisplayName = user.email.split('@')[0];
+                        userProfilePicUrl = `https://placehold.co/100x100/A0AEC0/FFFFFF?text=${user.email.split('@')[0].charAt(0).toUpperCase()}`;
                         addNotification('Bienvenido', `Tu cuenta ha sido creada. ¡Empieza a chatear!`, 'success');
                     } else {
                         const userData = userDocSnap.data();
                         userDisplayName = userData.username || user.email.split('@')[0];
-                        userProfilePicUrl = userData.profilePicUrl || userProfilePicUrl;
+                        userProfilePicUrl = userData.profilePicUrl || `https://placehold.co/100x100/A0AEC0/FFFFFF?text=${userDisplayName.charAt(0).toUpperCase()}`;
                         userPhoneDisplay.textContent = userData.phone || 'N/A';
                         userDobDisplay.textContent = userData.dob || 'N/A';
                         userAgeDisplay.textContent = userData.age ? `${userData.age} años` : 'N/A';
@@ -1062,7 +1063,7 @@
                     await setDoc(doc(db, "users", user.uid), {
                         email: user.email,
                         username: username,
-                        profilePicUrl: userProfilePicUrl, // Default profile picture
+                        profilePicUrl: `https://placehold.co/100x100/A0AEC0/FFFFFF?text=${username.charAt(0).toUpperCase()}`, // Default profile picture
                         phone: phone,
                         dob: dob,
                         age: age,
@@ -1076,7 +1077,7 @@
                     // Update Auth profile
                     await updateProfile(user, {
                         displayName: username,
-                        photoURL: userProfilePicUrl
+                        photoURL: `https://placehold.co/100x100/A0AEC0/FFFFFF?text=${username.charAt(0).toUpperCase()}`
                     });
 
                     // Send verification email
@@ -1339,7 +1340,7 @@
                 chatHeader.classList.remove('hidden'); // Ensure header is visible
                 currentChatName.textContent = 'Selecciona un chat';
                 currentChatStatus.textContent = '';
-                currentChatPic.src = "https://placehold.co/50x50/E2E8F0/4A5568?text=Chat";
+                currentChatPic.src = "https://placehold.co/50x50/A0AEC0/FFFFFF?text=Chat";
                 addGroupMemberButton.classList.add('hidden');
                 leaveGroupButton.classList.add('hidden');
                 activeChat = null;
@@ -1401,7 +1402,7 @@
                 const messages = [];
                 for (const docSnapshot of snapshot.docs) {
                     const messageData = docSnapshot.data();
-                    let senderInfo = { username: "Desconocido", profilePicUrl: "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF" };
+                    let senderInfo = { username: "Desconocido", profilePicUrl: `https://placehold.co/100x100/A0AEC0/FFFFFF?text=U` };
                     if (messageData.senderId) {
                         senderInfo = await getUserInfo(messageData.senderId);
                     }
@@ -1428,7 +1429,7 @@
                     const userData = userDocSnap.data();
                     const info = {
                         username: userData.username || userData.email.split('@')[0],
-                        profilePicUrl: userData.profilePicUrl || "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF"
+                        profilePicUrl: userData.profilePicUrl || `https://placehold.co/100x100/A0AEC0/FFFFFF?text=${(userData.username || userData.email.split('@')[0]).charAt(0).toUpperCase()}`
                     };
                     userInfoCache[uid] = info; // Cache the result
                     return info;
@@ -1757,17 +1758,29 @@
                 const currentUserRef = doc(db, "users", currentUserId);
                 const senderUserRef = doc(db, "users", senderId);
 
-                // 1. Add sender to current user's contacts
+                // Find the exact request object to remove
+                const requestToRemove = friendRequests.find(req => req.senderId === senderId);
+                const senderRequestInReceiverDoc = { senderId: requestToRemove.senderId, timestamp: requestToRemove.timestamp };
+
+                const senderDocSnap = await getDoc(senderUserRef);
+                const senderSentRequests = senderDocSnap.data().friendRequestsSent || [];
+                const receiverRequestInSenderDoc = senderSentRequests.find(req => req.receiverId === currentUserId);
+
+
+                // 1. Add sender to current user's contacts and remove received request
                 await updateDoc(currentUserRef, {
                     contacts: arrayUnion(senderId),
-                    friendRequestsReceived: arrayRemove({ senderId: senderId, timestamp: friendRequests.find(req => req.senderId === senderId).timestamp })
+                    friendRequestsReceived: arrayRemove(senderRequestInReceiverDoc)
                 });
 
-                // 2. Add current user to sender's contacts
-                await updateDoc(senderUserRef, {
-                    contacts: arrayUnion(currentUserId),
-                    friendRequestsSent: arrayRemove({ receiverId: currentUserId, timestamp: (await getDoc(senderUserRef)).data().friendRequestsSent.find(req => req.receiverId === currentUserId).timestamp })
-                });
+                // 2. Add current user to sender's contacts and remove sent request
+                if (receiverRequestInSenderDoc) {
+                    await updateDoc(senderUserRef, {
+                        contacts: arrayUnion(currentUserId),
+                        friendRequestsSent: arrayRemove(receiverRequestInSenderDoc)
+                    });
+                }
+
 
                 addNotification('Solicitud Aceptada', `Has aceptado la solicitud de amistad de ${friendRequests.find(req => req.senderId === senderId).username}.`, 'success');
                 // Re-listen for contacts and friend requests to update UI
@@ -1784,15 +1797,25 @@
                 const currentUserRef = doc(db, "users", currentUserId);
                 const senderUserRef = doc(db, "users", senderId);
 
+                // Find the exact request object to remove
+                const requestToRemove = friendRequests.find(req => req.senderId === senderId);
+                const senderRequestInReceiverDoc = { senderId: requestToRemove.senderId, timestamp: requestToRemove.timestamp };
+
+                const senderDocSnap = await getDoc(senderUserRef);
+                const senderSentRequests = senderDocSnap.data().friendRequestsSent || [];
+                const receiverRequestInSenderDoc = senderSentRequests.find(req => req.receiverId === currentUserId);
+
                 // 1. Remove from current user's received requests
                 await updateDoc(currentUserRef, {
-                    friendRequestsReceived: arrayRemove({ senderId: senderId, timestamp: friendRequests.find(req => req.senderId === senderId).timestamp })
+                    friendRequestsReceived: arrayRemove(senderRequestInReceiverDoc)
                 });
 
                 // 2. Remove from sender's sent requests
-                await updateDoc(senderUserRef, {
-                    friendRequestsSent: arrayRemove({ receiverId: currentUserId, timestamp: (await getDoc(senderUserRef)).data().friendRequestsSent.find(req => req.receiverId === currentUserId).timestamp })
-                });
+                if (receiverRequestInSenderDoc) {
+                    await updateDoc(senderUserRef, {
+                        friendRequestsSent: arrayRemove(receiverRequestInSenderDoc)
+                    });
+                }
 
                 addNotification('Solicitud Rechazada', `Has rechazado la solicitud de amistad de ${friendRequests.find(req => req.senderId === senderId).username}.`, 'info');
                 // Re-listen for friend requests to update UI
@@ -1815,7 +1838,7 @@
                 for (const docSnap of snapshot.docs) {
                     const groupData = docSnap.data();
                     // Fetch admin info
-                    let adminInfo = { username: "Admin Desconocido", profilePicUrl: "https://placehold.co/100x100/A0AEC0/FFFFFF?text=PF" };
+                    let adminInfo = { username: "Admin Desconocido", profilePicUrl: `https://placehold.co/100x100/A0AEC0/FFFFFF?text=A` };
                     if (groupData.adminId) {
                         adminInfo = await getUserInfo(groupData.adminId);
                     }
@@ -1839,7 +1862,7 @@
                     const li = document.createElement('li');
                     li.className = 'flex items-center p-3 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors duration-200';
                     li.innerHTML = `
-                        <img src="${group.photoURL || 'https://placehold.co/80x80/E2E8F0/4A5568?text=Grupo'}" alt="${group.name}" class="w-10 h-10 rounded-full object-cover mr-3">
+                        <img src="${group.photoURL || 'https://placehold.co/80x80/A0AEC0/FFFFFF?text=Grupo'}" alt="${group.name}" class="w-10 h-10 rounded-full object-cover mr-3">
                         <div>
                             <span class="font-medium text-gray-800">${group.name}</span>
                             <p class="text-sm text-gray-500">${group.description || 'Sin descripción'}</p>
@@ -1855,7 +1878,7 @@
             groupNameInput.value = '';
             groupDescriptionInput.value = '';
             groupPhotoUploadInput.value = '';
-            groupPhotoPreview.src = 'https://placehold.co/80x80/E2E8F0/4A5568?text=Grupo';
+            groupPhotoPreview.src = 'https://placehold.co/80x80/A0AEC0/FFFFFF?text=Grupo';
             createGroupMessage.textContent = '';
             updateGroupMemberSelection();
             createGroupModal.classList.remove('hidden');
@@ -2128,7 +2151,7 @@
             activeChat = { type, id, name, picUrl, adminId };
 
             currentChatName.textContent = name;
-            currentChatPic.src = picUrl || (type === 'group' ? 'https://placehold.co/50x50/E2E8F0/4A5568?text=Grupo' : 'https://placehold.co/50x50/A0AEC0/FFFFFF?text=PF');
+            currentChatPic.src = picUrl || (type === 'group' ? 'https://placehold.co/50x50/A0AEC0/FFFFFF?text=Grupo' : `https://placehold.co/50x50/A0AEC0/FFFFFF?text=${name.charAt(0).toUpperCase()}`);
             currentChatStatus.textContent = type === 'contact' ? 'Online' : 'Grupo'; // Placeholder for status
 
             // Show/hide group management buttons
